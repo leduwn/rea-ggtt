@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "title": "GGTT Reverse Engineering Claim Verification Matrix (Phase 9)",
+    "target": "GGTT.dll (v1.1.4.12, .NETCoreApp,Version=v10.0, x86 PE32)",
+    "sha256": "6ee719dd26a248e6295429e523c2220b8e87a4a98168ea0626174aa1fb0ef6b5",
+    "mvid": "298ab416-d58b-4c6d-8e4a-91f20ef739a1",
+    "generated_at": "2026-11-11",
+    "phase": "Phase 9 - Behavioral Verification & Evidence Reconciliation"
+  },
+  "summary": {
+    "total_claims": 12,
+    "cil_proven_claims": 11,
+    "mixed_specification_claims": 1,
+    "unverified_runtime_claims": 0,
+    "mutation_kill_rate_pct": 100.0,
+    "boundary_pass_rate_pct": 100.0
+  },
+  "claims": [
+    {
+      "claim_id": "CLM-01",
+      "subsystem": "LIVE_PK_TEAM_SCORING",
+      "claim_title": "Combo Delta Calculation Formula",
+      "description": "Combo points calculate deltaCoins and deltaQuantity against previous streak, clamping negatives to 0. If deltaQuantity is 0, deltaCoins is clamped to 0.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x06000a46_TeamScoringService_Gift_b0.cil (IL_09e0 - IL_0a35)",
+        "tests/conformance/run_tests.js (TC1)",
+        "tests/verification/mutation_tests.js (MUTANT_01: KILLED)",
+        "tests/verification/boundary_tests.js (Suite B1: 3/3 PASS)"
+      ],
+      "tokens": ["0x06000a46"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Implement exact Math.max(0, incoming - prev) logic with zero-quantity zero-coin guard."
+    },
+    {
+      "claim_id": "CLM-02",
+      "subsystem": "LIVE_PK_TEAM_SCORING",
+      "claim_title": "5-Tier Recipient Hierarchy Fallback",
+      "description": "Recipient resolution follows strict 5-tier precedence: UI Override (Tier 1) -> Existing Combo Target (Tier 2) -> Sender Target (Tier 3) -> Round Rule Target (Tier 4) -> Pending (Tier 5).",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x06000a46_TeamScoringService_Gift_b0.cil",
+        "evidence/cil/0x0600049d_TeamChannelPkService_Recipient.cil",
+        "tests/conformance/run_tests.js (TC2)",
+        "tests/verification/mutation_tests.js (MUTANT_02: KILLED)",
+        "tests/verification/boundary_tests.js (Suite B2: 3/3 PASS)"
+      ],
+      "tokens": ["0x06000a46", "0x0600049d"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Enforce identical priority chain; abnormal or empty contexts must fall through to Tier 5 Pending without throwing."
+    },
+    {
+      "claim_id": "CLM-03",
+      "subsystem": "LIVE_PK_TEAM_SCORING",
+      "claim_title": "Combo Streak Lifecycle & Reset",
+      "description": "Streak combos reset to null when gift ID or streak breaks. State machine maintains streak continuity over time window.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x060004ab_TeamChannelPkService_ClearCombo.cil",
+        "evidence/cil/0x060004ac_TeamChannelPkService_ResetCombo.cil",
+        "evidence/cil/0x06000a46_TeamScoringService_Gift_b0.cil (IL_0968 ldnull)",
+        "tests/conformance/run_tests.js (TC3)",
+        "tests/verification/mutation_tests.js (MUTANT_03: KILLED)"
+      ],
+      "tokens": ["0x060004ab", "0x060004ac", "0x06000a46"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Reset combo tracking object to null on broken streak to avoid cross-gift accumulation."
+    },
+    {
+      "claim_id": "CLM-04",
+      "subsystem": "DATA_PERSISTENCE_LIFECYCLE",
+      "claim_title": "SQLite ACID Transaction Boundary & Concurrency",
+      "description": "SQLite WAL journal mode with automatic pre-migration backup, optimistic concurrency via revision column, and transaction rollback on error.",
+      "proof_type": "MIXED_SPECIFICATION",
+      "evidence_sources": [
+        "evidence/cil/0x060004ae_TeamChannelPkService_CommitGiftCombo.cil",
+        "evidence/cil/0x0600063a_TeamScoringService_AddLedger.cil",
+        "scripts/dump_sqlite_methods.js (0x060004b5, 0x060004ca)",
+        "tests/conformance/run_tests.js (TC4)",
+        "tests/verification/mutation_tests.js (MUTANT_08: KILLED)"
+      ],
+      "tokens": ["0x060004b5", "0x060004ca", "0x060004ae", "0x0600063a"],
+      "confidence": "HIGH",
+      "clean_room_implication": "Treat transaction boundary as architectural specification test; drivers must ensure atomicity and rollback."
+    },
+    {
+      "claim_id": "CLM-05",
+      "subsystem": "WEBSOCKET_OVERLAY_MEDIA_SERVER",
+      "claim_title": "WebSocket Protocol & 250ms Debounce Throttling",
+      "description": "Overlay synchronization emits JSON 'team_state' messages, debounced with a 250ms window via teamLastStateSent and teamStatePending async delay.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x06000311_Google_Tiktok_Form_SendTeamState.cil (IL_0061 - IL_009a)",
+        "evidence/cil/0x060002ab_Google_Tiktok_Form_StartWebSocketServer.cil",
+        "tests/conformance/run_tests.js (TC5)",
+        "tests/verification/mutation_tests.js (MUTANT_09: KILLED)"
+      ],
+      "tokens": ["0x06000311", "0x060002ab", "0x060002a1"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Implement identical 250ms throttle with delayed async dispatch for high-frequency live events."
+    },
+    {
+      "claim_id": "CLM-06",
+      "subsystem": "WEBSOCKET_OVERLAY_MEDIA_SERVER",
+      "claim_title": "14 HTTP MIME Mappings & Dynamic Port Hopping",
+      "description": "Embedded media HTTP server binds dynamically to ports 5000-5050 and resolves exactly 14 file extensions, defaulting to application/octet-stream.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x060002a6_Google_Tiktok_Form_StartMediaServerCore.cil",
+        "evidence/cil/0x060002aa_Google_Tiktok_Form_GetMimeType.cil",
+        "tests/conformance/run_tests.js (TC6)",
+        "tests/verification/mutation_tests.js (MUTANT_10: KILLED)"
+      ],
+      "tokens": ["0x060002a6", "0x060002aa"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Provide identical 14-entry MIME lookup dictionary with application/octet-stream fallback and port scan."
+    },
+    {
+      "claim_id": "CLM-07",
+      "subsystem": "TIKTOK_EVENT_PIPELINE",
+      "claim_title": "Embedded Script Integrity & SHA-256 Verification",
+      "description": "Injected WebView2 scripts must not exceed 1MB (1,048,576 bytes), must contain TikLangJz and communicate_launcher tokens, and match SHA-256 hash.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x06000295_EmbeddedScriptLoader_Validate.cil",
+        "evidence/cil/0x0600028f_EmbeddedScriptLoader_GetAsync.cil",
+        "tests/conformance/run_tests.js (TC7)",
+        "tests/verification/mutation_tests.js (MUTANT_11: KILLED)",
+        "tests/verification/boundary_tests.js (Suite B5: 2/2 PASS)"
+      ],
+      "tokens": ["0x06000295", "0x0600028f"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Pre-validate embedded payload size and cryptographic hash before executing inside WebView2."
+    },
+    {
+      "claim_id": "CLM-08",
+      "subsystem": "VISUAL_EFFECTS_SCENARIO_ENGINE",
+      "claim_title": "Scenario Engine Queue Bound 256 & State Arithmetic",
+      "description": "ScenarioEngine limits pending action queue to 256 items, handles cancel_pending, and clamps add_state values to [-1000000, 1000000].",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "scripts/build_symbol_database.js (0x0600042e Tick, 0x0600042f Evaluate)",
+        "tests/conformance/run_tests.js (TC8)",
+        "tests/verification/mutation_tests.js (MUTANT_04: KILLED)",
+        "tests/verification/boundary_tests.js (Suite B3: 2/2 PASS)"
+      ],
+      "tokens": ["0x0600042e", "0x0600042f"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Hard-cap scenario action execution at 256 items per tick; clamp state mutations between -1M and +1M."
+    },
+    {
+      "claim_id": "CLM-09",
+      "subsystem": "AI_POSE_TRACKING_OBS",
+      "claim_title": "Squat Counter Angle Thresholds & OBS v5 Auth",
+      "description": "Squat counting cycles through STANDING (>160 deg) -> DESCENDING (<140 deg) -> SQUATTING (<=100 deg) -> STANDING. OBS v5 uses SHA256 challenge-response.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "scripts/build_symbol_database.js (0x06000455, 0x06000457, 0x0600045b, 0x0600045c, 0x060008d4, 0x060008e8)",
+        "tests/conformance/run_tests.js (TC9)",
+        "tests/verification/mutation_tests.js (MUTANT_05: KILLED)",
+        "tests/verification/boundary_tests.js (Suite B4: 3/3 PASS)"
+      ],
+      "tokens": ["0x06000455", "0x06000457", "0x0600045b", "0x0600045c", "0x060008d4", "0x060008e8"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Use exact floating point angle transitions (160/140/100) and standard OBS WebSocket v5 auth handshake."
+    },
+    {
+      "claim_id": "CLM-10",
+      "subsystem": "GAME_HOTKEYS_AUTOMATION",
+      "claim_title": "Win32 Hotkey WPARAM/LPARAM & Hardware Scancodes",
+      "description": "Win32 WM_HOTKEY message decodes modifier bits in low word (bits 0-15) and VK code in high word (bits 16-31). Emulates DirectX scancodes.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x0600020d_Google_Tiktok_Form_WndProc.cil",
+        "evidence/cil/0x06000a67_HardwareInput_SendScancode.cil",
+        "tests/conformance/run_tests.js (TC10)",
+        "tests/verification/mutation_tests.js (MUTANT_06: KILLED)",
+        "tests/verification/boundary_tests.js (Suite B6: 2/2 PASS)"
+      ],
+      "tokens": ["0x0600020d", "0x0600021c", "0x06000224", "0x06000a67"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Extract 16-bit words using bitwise masking (lParam & 0xFFFF, (lParam >>> 16) & 0xFFFF) to avoid sign extension."
+    },
+    {
+      "claim_id": "CLM-11",
+      "subsystem": "DATA_PERSISTENCE_LIFECYCLE",
+      "claim_title": "SQLite live_ledger View Union All Aggregation",
+      "description": "View live_ledger aggregates completed ledger rows with uncommitted pending_gifts via UNION ALL to provide instantaneous stream score.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "evidence/cil/0x060004b5_TeamStore_Upgrade.cil",
+        "evidence/cil/0x060004e0_TeamStore_CreateLedgerView.cil",
+        "evidence/cil/0x060004fa_TeamStore_QueryLiveLedger.cil",
+        "tests/conformance/run_tests.js (TC11)",
+        "tests/verification/mutation_tests.js (MUTANT_07: KILLED)"
+      ],
+      "tokens": ["0x060004b5", "0x060004e0", "0x060004fa"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Ensure live score queries read both persistent ledger and in-memory/transient pending gifts table."
+    },
+    {
+      "claim_id": "CLM-12",
+      "subsystem": "CROSS_CUTTING_SECURITY",
+      "claim_title": "EffectProcessTrust RSA Signature & Named Pipe Binding",
+      "description": "Studio handshake over regex-validated Named Pipe ^GGTT\\.Studio\\.Launch\\..*\\.[a-f0-9]{32}$, verifying executable sha256 against RSA-signed release manifest.",
+      "proof_type": "CIL_PROVEN",
+      "evidence_sources": [
+        "reports/27-phase9-coverage-reconciliation.md (Section 2.3)",
+        "evidence/functions/scenario_engine_trust_methods.json",
+        "REA inspect_managed_members (ev_74da23d5cb18f06313944e777d21d1d0605478ae886d478cb0a6cff7823bd7d9)"
+      ],
+      "tokens": ["0x06000381", "0x06000382", "0x06000383", "0x06000384", "0x06000385", "0x06000386"],
+      "confidence": "CERTAIN",
+      "clean_room_implication": "Document security architecture for clean-room implementation; do not copy embedded RSA public key token 0x700061e8."
+    }
+  ]
+}

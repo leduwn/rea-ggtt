@@ -56,21 +56,29 @@ rea-ggtiktok/
 │   ├── 23-game-hotkeys-and-automation.md # Phase 8: Minecraft RCON, Phím nóng Win32 & DirectX scancodes
 │   ├── 24-persistence-and-lifecycle.md # Phase 8: winsqlite3 WAL, Sổ cái bất biến, cache dọn dẹp & update
 │   ├── 25-cross-module-integration.md  # Phase 8: Bản đồ tương tác toàn hệ thống & kiểm soát backpressure
-│   └── 26-phase8-handoff.md            # Phase 8: Báo cáo tổng kết & chuyển giao toàn diện giai đoạn 8
+│   ├── 26-phase8-handoff.md            # Phase 8: Báo cáo tổng kết & chuyển giao toàn diện giai đoạn 8
+│   ├── 27-phase9-coverage-reconciliation.md # Phase 9: Tái kiểm toán độ bao phủ, giải mã RSA & Named Pipe
+│   ├── 28-conformance-test-audit.md    # Phase 9: Kiểm toán test tuân thủ, 11 đột biến & 15 kiểm thử biên
+│   ├── 29-deep-algorithm-verification.md # Phase 9: Xác minh chỉ lệnh CIL 4 thuật toán cốt lõi (C1 - C4)
+│   ├── 30-controlled-runtime-test-plan.md # Phase 9: Kế hoạch kiểm thử động an toàn trên máy ảo cô lập
+│   ├── 31-controlled-runtime-observations.md # Phase 9: Nhật ký quan sát động (BLOCKED_PENDING_AUTHORIZATION)
+│   ├── 32-evidence-reconciliation.md   # Phase 9: Đối soát 12 khẳng định kỹ thuật & nguyên tắc phòng sạch
+│   └── 33-phase9-handoff.md            # Phase 9: Báo cáo tổng kết & chuyển giao toàn diện giai đoạn 9
 ├── evidence/                           # Bằng chứng kỹ thuật Clean-Room (Derived Artifacts)
 │   ├── flows/                          # Đặc tả JSON cấu trúc luồng của 3 pipeline trọng điểm
 │   ├── phase7/                         # Ma trận claim-matrix, contract-provenance, unresolved-claims
-│   └── phase8/                         # Ma trận độ bao phủ 2.685 method, luồng hiệu ứng/tracking, an toàn
-│       ├── coverage-matrix.json        # Ma trận đầy đủ 2.685 phương thức theo 10 phân hệ chức năng
-│       ├── effects-flow.json           # Mô hình hóa luồng kỹ xảo 32 lớp & điều kiện kịch bản
-│       ├── tracking-flow.json          # Luồng AI Pose Tracking & OBS WebSocket v5 RPC
-│       └── sanitized-findings.json     # Báo cáo khử nhiễm an toàn các endpoint, webhook và tài nguyên
-├── tests/                              # Bộ kiểm thử tuân thủ ngoại tuyến (Offline Conformance Harness)
-│   └── conformance/                    # Bộ test độc lập không tải nhị phân (74/74 assertions PASS)
-│       ├── fixtures/                   # Dữ liệu kiểm thử giả lập 11 nhóm TC1 -> TC11
-│       ├── expected/                   # Kết quả kỳ vọng theo đúng chỉ lệnh CIL
-│       ├── README.md                   # Hướng dẫn thực thi bộ kiểm thử
-│       └── run_tests.js                # Runner tự động kiểm tra tính tuân thủ (TC1-TC11)
+│   ├── phase8/                         # Ma trận độ bao phủ 2.685 method, luồng hiệu ứng/tracking, an toàn
+│   └── phase9/                         # Ma trận đối soát khẳng định máy đọc chuẩn hóa
+│       └── claim-verification-matrix.json # Ma trận 12 khẳng định kỹ thuật có thể xử lý tự động
+├── tests/                              # Bộ kiểm thử tuân thủ ngoại tuyến & đột biến (Test Harness)
+│   ├── conformance/                    # Bộ test độc lập không tải nhị phân (74/74 assertions PASS)
+│   │   ├── fixtures/                   # Dữ liệu kiểm thử giả lập 11 nhóm TC1 -> TC11
+│   │   ├── expected/                   # Kết quả kỳ vọng theo đúng chỉ lệnh CIL
+│   │   ├── README.md                   # Hướng dẫn thực thi bộ kiểm thử
+│   │   └── run_tests.js                # Runner tự động kiểm tra tính tuân thủ (TC1-TC11)
+│   └── verification/                   # Harness kiểm thử đột biến & giá trị biên (Phase 9)
+│       ├── mutation_tests.js           # Kiểm thử độ nhạy đột biến 11 phân hệ (11/11 mutants killed, 100%)
+│       └── boundary_tests.js           # Kiểm thử 15 ca giá trị biên & đầu vào bất thường (15/15 PASS)
 └── scripts/                            # Kịch bản phân tích tự động bằng Node.js
     ├── parse_methods.js                # Bộ trích xuất và lọc cấu trúc method từ REA retained view
     └── compare_inventory.js            # Kịch bản đối soát đối chiếu 360 tệp đĩa vs inventory JSON
@@ -126,5 +134,13 @@ rea-ggtiktok/
   - [x] Tích hợp toàn hệ thống, Cơ chế đồng bộ đa luồng & Backpressure throttling: [25-cross-module-integration.md](reports/25-cross-module-integration.md).
   - [x] Mở rộng bộ kiểm thử ngoại tuyến TC1-TC11: [run_tests.js](tests/conformance/run_tests.js) (74/74 assertions PASS, 100%).
   - [x] Kiểm toán an toàn kho lưu trữ & Báo cáo chuyển giao tổng thể: [26-phase8-handoff.md](reports/26-phase8-handoff.md), [sanitized-findings.json](evidence/phase8/sanitized-findings.json).
+- [x] **Phase 9: Behavioral Verification, Evidence Reconciliation & Controlled Observation**:
+  - [x] Tái kiểm toán độ bao phủ & giải quyết mâu thuẫn 42 vs 36 CIL, cấu trúc RSA & Named Pipe `EffectProcessTrust`: [27-phase9-coverage-reconciliation.md](reports/27-phase9-coverage-reconciliation.md).
+  - [x] Kiểm toán độc lập Conformance Harness, Kiểm thử đột biến (11/11 mutants killed, 100%) & Kiểm thử giá trị biên (15/15 passed): [28-conformance-test-audit.md](reports/28-conformance-test-audit.md), [mutation_tests.js](tests/verification/mutation_tests.js), [boundary_tests.js](tests/verification/boundary_tests.js).
+  - [x] Xác minh chỉ lệnh CIL nhị phân 4 thuật toán cốt lõi (C1 ScenarioEngine, C2 AI Pose & OBS, C3 SQLite Accounting, C4 WebSocket & Media): [29-deep-algorithm-verification.md](reports/29-deep-algorithm-verification.md).
+  - [x] Kế hoạch kiểm thử động an toàn trên máy ảo độc lập (TC-DYN-01 -> 09): [30-controlled-runtime-test-plan.md](reports/30-controlled-runtime-test-plan.md).
+  - [x] Khóa thực thi kiểm soát an toàn tuyệt đối (`BLOCKED_PENDING_AUTHORIZATION`): [31-controlled-runtime-observations.md](reports/31-controlled-runtime-observations.md).
+  - [x] Đối soát 12 khẳng định kỹ thuật & Ma trận bằng chứng máy đọc: [32-evidence-reconciliation.md](reports/32-evidence-reconciliation.md), [claim-verification-matrix.json](evidence/phase9/claim-verification-matrix.json).
+  - [x] Báo cáo tổng kết & Chuyển giao toàn diện giai đoạn 9: [33-phase9-handoff.md](reports/33-phase9-handoff.md).
 
 Mọi kết luận kỹ thuật đều đạt trạng thái kiểm toán chuẩn hóa (CONFIRMED / INFERRED / SPECULATIVE) dựa trên dữ liệu giải mã nhị phân có thể kiểm chứng độc lập. Clean-Room Ready 100%.
