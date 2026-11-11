@@ -1,0 +1,26 @@
+{
+  "test_suite": "TC11_SQLITE_LEDGER_AGGREGATION",
+  "cases": [
+    {
+      "id": "tc11_01_live_ledger_aggregation",
+      "committed_ledger": [
+        { "id": "tx_01", "member_id": "member_red", "coins": 100, "quantity": 1 },
+        { "id": "tx_02", "member_id": "member_blue", "coins": 250, "quantity": 5 }
+      ],
+      "pending_gifts": [
+        { "id": "tx_03", "member_id": "member_red", "coins": 50, "quantity": 1 },
+        { "id": "tx_04", "member_id": "member_red", "coins": 100, "quantity": 2 }
+      ]
+    },
+    {
+      "id": "tc11_02_delivery_idempotency",
+      "existing_deliveries": ["pkg_1001", "pkg_1002"],
+      "incoming_delivery": "pkg_1002"
+    },
+    {
+      "id": "tc11_03_delivery_new",
+      "existing_deliveries": ["pkg_1001", "pkg_1002"],
+      "incoming_delivery": "pkg_1003"
+    }
+  ]
+}

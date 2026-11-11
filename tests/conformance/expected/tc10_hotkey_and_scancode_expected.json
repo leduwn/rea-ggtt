@@ -1,0 +1,32 @@
+{
+  "test_suite": "TC10_HOTKEY_AND_SCANCODE_DISPATCH",
+  "expected_results": [
+    {
+      "id": "tc10_01_wm_hotkey_ctrl_alt_shift_a",
+      "virtual_key": 65,
+      "modifier": 7,
+      "dispatched_action": "set_pause_effect_0"
+    },
+    {
+      "id": "tc10_02_wm_hotkey_ctrl_alt_minus",
+      "virtual_key": 189,
+      "modifier": 3,
+      "dispatched_action": "win_count_update_0"
+    },
+    {
+      "id": "tc10_03_scancode_normal_key_down",
+      "flags": 8,
+      "is_extended": false
+    },
+    {
+      "id": "tc10_04_scancode_extended_key_up",
+      "flags": 11,
+      "is_extended": true
+    },
+    {
+      "id": "tc10_05_mouse_wheel_up",
+      "mouse_flags": 2048,
+      "mouse_data": 120
+    }
+  ]
+}

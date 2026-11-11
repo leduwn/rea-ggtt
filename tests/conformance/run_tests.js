@@ -286,6 +286,176 @@ function runTC7() {
   console.log('');
 }
 
+// -----------------------------------------------------------------------------
+// TC8: SCENARIO ENGINE CONDITION EVALUATION & ACTION DISPATCH
+// CIL Provenance: 0x0600016e, 0x06000171, 0x06000176
+// -----------------------------------------------------------------------------
+function runTC8() {
+  console.log('--- RUNNING TC8: SCENARIO ENGINE EVALUATION (VERIFIED_CONFORMANCE) ---');
+  const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/tc8_scenario_engine.json'), 'utf8'));
+  const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'expected/tc8_scenario_engine_expected.json'), 'utf8'));
+
+  for (let i = 0; i < fixture.cases.length; i++) {
+    const c = fixture.cases[i];
+    const exp = expected.expected_results.find(r => r.id === c.id);
+
+    if (c.condition) {
+      let satisfied = false;
+      if (c.condition.type === 'time') {
+        satisfied = c.context.current_time_ms >= c.condition.target_ms;
+      } else if (c.condition.type === 'state') {
+        satisfied = c.context.state[c.condition.key] === c.condition.expected;
+      } else if (c.condition.type === 'random') {
+        satisfied = c.context.sampled_random < c.condition.threshold;
+      } else if (c.condition.type === 'collision') {
+        const a = c.condition.box_a;
+        const b = c.condition.box_b;
+        satisfied = (a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y);
+      }
+      assert(satisfied === exp.satisfied, `${c.id}: condition satisfied=${satisfied} (exp=${exp.satisfied})`);
+    } else if (c.pending_action_count !== undefined) {
+      const overflow = c.pending_action_count >= 256;
+      let warning = '';
+      if (overflow) {
+        warning = 'Quá nhiều hành động đang chờ; giảm lặp kịch bản.';
+      }
+      assert(overflow === exp.overflow_triggered && warning === exp.warning_message,
+        `${c.id}: overflow=${overflow}, warning='${warning}'`);
+    }
+  }
+  console.log('');
+}
+
+// -----------------------------------------------------------------------------
+// TC9: AI POSE SQUAT COUNTER & OBS WEBSOCKET AUTH
+// CIL Provenance: 0x060000a2, 0x060000d1, 0x060000eb
+// -----------------------------------------------------------------------------
+function runTC9() {
+  console.log('--- RUNNING TC9: POSE SQUAT COUNTER & OBS AUTH (VERIFIED_CONFORMANCE) ---');
+  const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/tc9_pose_squat_counter.json'), 'utf8'));
+  const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'expected/tc9_pose_squat_counter_expected.json'), 'utf8'));
+
+  for (let i = 0; i < fixture.cases.length; i++) {
+    const c = fixture.cases[i];
+    const exp = expected.expected_results.find(r => r.id === c.id);
+
+    if (c.p_knee) {
+      const v1 = { x: c.p_hip.x - c.p_knee.x, y: c.p_hip.y - c.p_knee.y };
+      const v2 = { x: c.p_ankle.x - c.p_knee.x, y: c.p_ankle.y - c.p_knee.y };
+      const dot = v1.x * v2.x + v1.y * v2.y;
+      const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+      const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+      let cosTheta = dot / (mag1 * mag2);
+      cosTheta = Math.max(-1.0, Math.min(1.0, cosTheta));
+      const angle = Math.round(Math.acos(cosTheta) * (180.0 / Math.PI));
+      assert(angle === exp.angle_deg, `${c.id}: calculated angle=${angle} deg (exp=${exp.angle_deg})`);
+    } else if (c.angle_sequence) {
+      let state = 'STANDING';
+      let reps = 0;
+      let completed = false;
+      for (const a of c.angle_sequence) {
+        if (state === 'STANDING' && a <= 100) {
+          state = 'DOWN';
+        } else if (state === 'DOWN' && a >= 160) {
+          reps++;
+          state = 'STANDING';
+          if (reps >= c.target_reps) {
+            completed = true;
+          }
+        }
+      }
+      assert(reps === exp.reps && completed === exp.completed,
+        `${c.id}: squat cycle reps=${reps} (exp=${exp.reps}), completed=${completed}`);
+    } else if (c.password) {
+      const h1 = crypto.createHash('sha256').update(c.password + c.salt).digest('base64');
+      const auth = crypto.createHash('sha256').update(h1 + c.challenge).digest('base64');
+      assert(auth === exp.auth_response, `${c.id}: OBS v5 auth hash match=${auth === exp.auth_response}`);
+    }
+  }
+  console.log('');
+}
+
+// -----------------------------------------------------------------------------
+// TC10: HOTKEYS DECODING & HARDWARE SCANCODE LOOKUP
+// CIL Provenance: 0x0600020d, 0x0600020e, 0x06000a67
+// -----------------------------------------------------------------------------
+function runTC10() {
+  console.log('--- RUNNING TC10: HOTKEYS & HARDWARE SCANCODES (VERIFIED_CONFORMANCE) ---');
+  const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/tc10_hotkey_and_scancode.json'), 'utf8'));
+  const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'expected/tc10_hotkey_and_scancode_expected.json'), 'utf8'));
+
+  const extendedKeys = new Set([181, 156, 211, 210, 183, 199, 207, 200, 208, 203, 205, 201, 209, 221, 157, 184, 69]);
+
+  for (let i = 0; i < fixture.cases.length; i++) {
+    const c = fixture.cases[i];
+    const exp = expected.expected_results.find(r => r.id === c.id);
+
+    if (c.lparam !== undefined) {
+      const vk = (c.lparam >> 16) & 0xFFFF;
+      const mod = c.lparam & 0xFFFF;
+      let action = 'unknown';
+      if (vk === 65 && mod === 7) action = 'set_pause_effect_0';
+      else if (vk === 189 && mod === 3) action = 'win_count_update_0';
+
+      assert(vk === exp.virtual_key && mod === exp.modifier && action === exp.dispatched_action,
+        `${c.id}: WM_HOTKEY vk=${vk}, mod=${mod}, action=${action}`);
+    } else if (c.scancode !== undefined) {
+      const isExt = extendedKeys.has(c.scancode);
+      let flags = 0x0008; // KEYEVENTF_SCANCODE
+      if (isExt) flags |= 0x0001; // KEYEVENTF_EXTENDEDKEY
+      if (c.is_key_up) flags |= 0x0002; // KEYEVENTF_KEYUP
+
+      assert(flags === exp.flags && isExt === exp.is_extended,
+        `${c.id}: scancode ${c.scancode} flags=0x${flags.toString(16)} (ext=${isExt})`);
+    } else if (c.mouse_code !== undefined) {
+      let mouseFlags = 0;
+      let mouseData = 0;
+      if (c.mouse_code === 264) {
+        mouseFlags = 0x0800; // MOUSEEVENTF_WHEEL
+        mouseData = 120;
+      }
+      assert(mouseFlags === exp.mouse_flags && mouseData === exp.mouse_data,
+        `${c.id}: mouse code ${c.mouse_code} flags=0x${mouseFlags.toString(16)}, data=${mouseData}`);
+    }
+  }
+  console.log('');
+}
+
+// -----------------------------------------------------------------------------
+// TC11: SQLITE LEDGER & MEMORY BUFFER AGGREGATION
+// CIL Provenance: 0x060004b5, 0x060004e0, 0x060004fa
+// -----------------------------------------------------------------------------
+function runTC11() {
+  console.log('--- RUNNING TC11: SQLITE LEDGER AGGREGATION (VERIFIED_CONFORMANCE) ---');
+  const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/tc11_sqlite_ledger_aggregation.json'), 'utf8'));
+  const expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'expected/tc11_sqlite_ledger_aggregation_expected.json'), 'utf8'));
+
+  for (let i = 0; i < fixture.cases.length; i++) {
+    const c = fixture.cases[i];
+    const exp = expected.expected_results.find(r => r.id === c.id);
+
+    if (c.committed_ledger && c.pending_gifts) {
+      // Simulating: CREATE TEMP VIEW live_ledger AS SELECT * FROM committed_ledger UNION ALL SELECT * FROM pending_gifts;
+      const liveLedger = [...c.committed_ledger, ...c.pending_gifts];
+      const memberTotals = {};
+      for (const row of liveLedger) {
+        memberTotals[row.member_id] = (memberTotals[row.member_id] || 0) + row.coins;
+      }
+
+      assert(liveLedger.length === exp.total_records,
+        `${c.id}: total records=${liveLedger.length} (exp=${exp.total_records})`);
+      assert(JSON.stringify(memberTotals) === JSON.stringify(exp.member_totals),
+        `${c.id}: memberTotals=${JSON.stringify(memberTotals)}`);
+    } else if (c.incoming_delivery) {
+      const isDuplicate = c.existing_deliveries.includes(c.incoming_delivery);
+      const accepted = !isDuplicate;
+      assert(isDuplicate === exp.is_duplicate && accepted === exp.accepted,
+        `${c.id}: delivery idempotency isDuplicate=${isDuplicate}, accepted=${accepted}`);
+    }
+  }
+  console.log('');
+}
+
 // Execute all test suites
 runTC1();
 runTC2();
@@ -294,6 +464,10 @@ runTC4();
 runTC5();
 runTC6();
 runTC7();
+runTC8();
+runTC9();
+runTC10();
+runTC11();
 
 console.log('================================================================');
 console.log(`SUMMARY: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);

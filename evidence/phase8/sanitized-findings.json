@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "audit_phase": "PHASE_8_SUBSYSTEM_SECURITY_AND_HYGIENE",
+  "artifact_name": "GGTT Windows Desktop Application",
+  "primary_assembly": "GGTT.dll",
+  "audited_at": "2026-11-11",
+  "auditor": "Principal Reverse Engineer & Software Verification Specialist",
+  "hygiene_compliance": {
+    "clean_room_isolation": true,
+    "no_proprietary_source_copied": true,
+    "no_live_network_requests_sent": true,
+    "no_binary_files_staged": true,
+    "all_external_tokens_sanitized": true
+  },
+  "sanitized_endpoints": [
+    {
+      "id": "SEC-01",
+      "category": "TELEMETRY_LOGGING",
+      "raw_token_reference": "0x70002157",
+      "target_service": "Discord Error Reporting Webhook",
+      "original_pattern": "https://discord.com/api/webhooks/<WEBHOOK_ID>/<WEBHOOK_TOKEN>",
+      "sanitized_representation": "https://discord.com/api/webhooks/<REDACTED_WEBHOOK_ID>/<REDACTED_TOKEN>",
+      "sanitization_status": "REDACTED",
+      "exposure_risk": "HIGH_IF_LEAKED",
+      "mitigation_in_clean_room": "Fully redacted in public reports; zero HTTP requests initiated."
+    },
+    {
+      "id": "SEC-02",
+      "category": "AUTHENTICATION_AND_LICENSING",
+      "raw_token_reference": "0x70015fc0 / 0x70016103",
+      "target_service": "jqsvn.com Desktop Login & Device OAuth Flow",
+      "original_pattern": "https://jqsvn.com/google_tiktok/ggtt-desktop-login.php?action=begin&request_id=",
+      "sanitized_representation": "https://jqsvn.com/google_tiktok/ggtt-desktop-login.php",
+      "sanitization_status": "MASKED_PARAMETERS",
+      "exposure_risk": "MEDIUM",
+      "mitigation_in_clean_room": "Device tokens and query parameters neutralized; server PHP backend treated as opaque black box."
+    },
+    {
+      "id": "SEC-03",
+      "category": "TEAM_AND_CHANNEL_METADATA",
+      "raw_token_reference": "0x7000bee3 / 0x70014b7b",
+      "target_service": "jqsvn.com Live PK Team Access & Shift Sync",
+      "original_pattern": "https://jqsvn.com/google_tiktok/ggtt-team-access.php",
+      "sanitized_representation": "https://jqsvn.com/google_tiktok/ggtt-team-access.php",
+      "sanitization_status": "STRUCTURE_RETAINED_NO_LIVE_CALLS",
+      "exposure_risk": "LOW",
+      "mitigation_in_clean_room": "Documented schema structure only; no live tenant or shift data accessed."
+    },
+    {
+      "id": "SEC-04",
+      "category": "DYNAMIC_INJECTION_SCRIPT",
+      "raw_token_reference": "0x700057b5 / 0x7000a30b",
+      "target_service": "TikTok Web Ingestion Script Delivery (TikLangJz)",
+      "original_pattern": "https://jqsvn.com/google_tiktok/js/get_script.php?id=...",
+      "sanitized_representation": "https://jqsvn.com/google_tiktok/js/get_script.php?id=<PARAM>",
+      "sanitization_status": "HASH_VALIDATED_OFFLINE",
+      "exposure_risk": "MEDIUM_INTEGRITY_RISK",
+      "mitigation_in_clean_room": "Validated against SHA-256 hash (914949e6639feb2f95e3695cade8de58305e996a7d421e5f08acb5138c31aec6); no automated script fetching."
+    }
+  ],
+  "ipc_and_protocol_isolation": [
+    {
+      "channel": "Named Pipe IPC",
+      "pattern": "\\\\.\\pipe\\GGTT_Effect_Session_*",
+      "scope": "Local Host Process Boundary",
+      "risk": "Cross-process injection if pipe ACLs are permissive",
+      "assessment": "Used exclusively for low-latency visual compositor communication with child renderer. Bounded to current Windows user session."
+    },
+    {
+      "channel": "WebSocket Server",
+      "binding": "ws://localhost:3784",
+      "scope": "Localhost Broadcast (OBS Browser Source)",
+      "risk": "Local process eavesdropping of live PK score states",
+      "assessment": "Transmits sanitized team_state JSON; contains no PII, streamer credentials, or financial payment tokens."
+    },
+    {
+      "channel": "HTTP Media Server",
+      "binding": "http://127.0.0.1:6211-6214",
+      "scope": "Localhost Asset Delivery",
+      "risk": "Local file disclosure if path traversal exists",
+      "assessment": "Restricted to GameStoreJQ and WebviewTT asset directories with strict MIME resolution."
+    },
+    {
+      "channel": "Minecraft RCON Client",
+      "binding": "TCP Socket (Default port 25575)",
+      "scope": "Outbound LAN/Remote Server Automation",
+      "risk": "Plaintext password transmission over unencrypted TCP",
+      "assessment": "Standard Minecraft RCON protocol constraint; requires streamers to isolate RCON ports within private LAN or VPN."
+    }
+  ],
+  "data_persistence_and_privacy": {
+    "sqlite_database": "team.db",
+    "journal_mode": "WAL",
+    "synchronous": "FULL",
+    "encryption": "UNENCRYPTED_AT_REST",
+    "privacy_audit": "Ledger records store TikTok sender IDs, member IDs, coin amounts, and gift timestamps. No credit card, bank, or TikTok account credentials stored in SQLite.",
+    "webview_isolation": {
+      "desktop_storage": "%AppData%\\Local\\GGTT\\WebviewTT",
+      "mobile_storage": "%AppData%\\Local\\GGTT\\WebViewJQ",
+      "cleanup_mechanism": "ReleaseWebViewsForCacheAsync -> Directory.Delete with retry loop",
+      "credential_hygiene": "Session cookies retained in isolated Edge WebView2 profiles; wiped on CleanCache execution."
+    }
+  },
+  "repository_hygiene_verification": {
+    "git_ignored_patterns": [
+      "evidence/binary/",
+      "evidence/cil/",
+      "evidence/functions/",
+      "evidence/resources/",
+      "evidence/strings/",
+      "evidence/verified/",
+      "evidence/xrefs/",
+      "*.exe",
+      "*.dll",
+      "*.onnx",
+      "*.pak",
+      "*.pdb",
+      "*.bin",
+      "*.db",
+      "*.sqlite*"
+    ],
+    "tracked_files_audit": "Clean. Zero binary artifacts or unredacted secrets committed."
+  }
+}

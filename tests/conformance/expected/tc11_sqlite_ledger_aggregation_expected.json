@@ -1,0 +1,23 @@
+{
+  "test_suite": "TC11_SQLITE_LEDGER_AGGREGATION",
+  "expected_results": [
+    {
+      "id": "tc11_01_live_ledger_aggregation",
+      "total_records": 4,
+      "member_totals": {
+        "member_red": 250,
+        "member_blue": 250
+      }
+    },
+    {
+      "id": "tc11_02_delivery_idempotency",
+      "is_duplicate": true,
+      "accepted": false
+    },
+    {
+      "id": "tc11_03_delivery_new",
+      "is_duplicate": false,
+      "accepted": true
+    }
+  ]
+}

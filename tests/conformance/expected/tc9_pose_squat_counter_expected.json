@@ -1,0 +1,22 @@
+{
+  "test_suite": "TC9_POSE_SQUAT_COUNTER_AND_OBS_AUTH",
+  "expected_results": [
+    {
+      "id": "tc9_01_joint_angle_straight",
+      "angle_deg": 180.0
+    },
+    {
+      "id": "tc9_02_joint_angle_right_angle",
+      "angle_deg": 90.0
+    },
+    {
+      "id": "tc9_03_squat_rep_cycle",
+      "reps": 2,
+      "completed": true
+    },
+    {
+      "id": "tc9_04_obs_v5_auth_sha256",
+      "auth_response": "7cTxW0sA1lqUVW8BrcBM+peQNwMB/xTUqKUDXPfrJ+8="
+    }
+  ]
+}

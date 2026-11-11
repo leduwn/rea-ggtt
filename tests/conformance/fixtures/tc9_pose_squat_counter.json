@@ -1,0 +1,28 @@
+{
+  "test_suite": "TC9_POSE_SQUAT_COUNTER_AND_OBS_AUTH",
+  "cases": [
+    {
+      "id": "tc9_01_joint_angle_straight",
+      "p_hip": { "x": 0.5, "y": 0.5 },
+      "p_knee": { "x": 0.5, "y": 0.7 },
+      "p_ankle": { "x": 0.5, "y": 0.9 }
+    },
+    {
+      "id": "tc9_02_joint_angle_right_angle",
+      "p_hip": { "x": 0.2, "y": 0.5 },
+      "p_knee": { "x": 0.5, "y": 0.5 },
+      "p_ankle": { "x": 0.5, "y": 0.8 }
+    },
+    {
+      "id": "tc9_03_squat_rep_cycle",
+      "target_reps": 2,
+      "angle_sequence": [170, 165, 120, 95, 110, 165, 170, 90, 165]
+    },
+    {
+      "id": "tc9_04_obs_v5_auth_sha256",
+      "password": "supersecretpassword",
+      "salt": "dGVzdHNhbHQ=",
+      "challenge": "dGVzdGNoYWxsZW5nZQ=="
+    }
+  ]
+}

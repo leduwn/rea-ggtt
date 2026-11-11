@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "GGTT AI Pose Tracking & OBS Integration Flow Specification",
+  "version": "1.0.0",
+  "target_assembly": "GGTT.dll",
+  "mvid": "298ab416-d58b-4c6d-8e4a-91f20ef739a1",
+  "namespace": "GGTT.Tracking",
+  "pipeline_stages": [
+    {
+      "order": 1,
+      "stage": "FRAME_ACQUISITION",
+      "class": "GGTT.Tracking.PunishmentTrackingService",
+      "description": "Capture video frame from webcam or OBS Virtual Camera stream at configured FPS"
+    },
+    {
+      "order": 2,
+      "stage": "ONNX_INFERENCE",
+      "class": "GGTT.Tracking.TrackingInference",
+      "method": "0x06000457",
+      "onnx_models": [
+        {
+          "name": "person_detection_mediapipe_2023mar.onnx",
+          "role": "Single/Multi-person bounding box detection",
+          "input": "detectorInput (RGB image tensor)",
+          "output": "Candidate bounding boxes and detection confidence"
+        },
+        {
+          "name": "pose_estimation_mediapipe_2023mar.onnx",
+          "role": "33-landmark pose estimation",
+          "input": "poseInput (Cropped person ROI tensor)",
+          "output": "Landmark coordinate tensors (X, Y, Z, Visibility)"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "stage": "KEYPOINT_GEOMETRY",
+      "class": "GGTT.Tracking.TrackingGeometry",
+      "method": "0x06000455",
+      "tracked_points": [
+        "Head", "Neck",
+        "LeftShoulder", "RightShoulder",
+        "LeftElbow", "RightElbow",
+        "LeftWrist", "RightWrist",
+        "LeftHip", "RightHip",
+        "LeftKnee", "RightKnee",
+        "LeftAnkle", "RightAnkle"
+      ],
+      "angle_formulas": {
+        "knee_angle": "Angle(LeftHip, LeftKnee, LeftAnkle) / Angle(RightHip, RightKnee, RightAnkle)",
+        "hip_angle": "Angle(LeftShoulder, LeftHip, LeftKnee)"
+      }
+    },
+    {
+      "order": 4,
+      "stage": "PUNISHMENT_REP_COUNTER",
+      "class": "GGTT.Tracking.PunishmentTrackingService",
+      "state_machine": {
+        "states": ["PREPARING", "STANDING", "DOWN", "COMPLETED"],
+        "transitions": [
+          { "from": "STANDING", "to": "DOWN", "condition": "KneeAngle < 100 degrees" },
+          { "from": "DOWN", "to": "STANDING", "condition": "KneeAngle > 160 degrees", "action": "repCount++" },
+          { "from": "STANDING", "to": "COMPLETED", "condition": "repCount >= targetCount" }
+        ]
+      }
+    },
+    {
+      "order": 5,
+      "stage": "OBS_WEBSOCKET_CONTROL",
+      "class": "GGTT.Tracking.ObsTrackingClient",
+      "protocol": "OBS WebSocket v5 (RFC)",
+      "requests": [
+        {
+          "requestType": "SetSceneItemTransform",
+          "data": ["sceneName", "sceneItemId", "sceneItemTransform"]
+        },
+        {
+          "requestType": "SetSceneItemEnabled",
+          "data": ["sceneName", "sceneItemId", "sceneItemEnabled"]
+        },
+        {
+          "requestType": "GetSourceScreenshot",
+          "data": ["sourceName", "imageFormat", "imageWidth", "imageHeight"]
+        }
+      ],
+      "smoothing": "Exponential Moving Average (EMA) to prevent camera jitter"
+    }
+  ],
+  "configuration": {
+    "settings_file": "tracking-settings.json",
+    "fields": [
+      { "name": "Port", "type": "int", "default": 4455 },
+      { "name": "Password", "type": "string" },
+      { "name": "Scene", "type": "string" },
+      { "name": "Source", "type": "string" },
+      { "name": "Count", "type": "int", "description": "Target punishment rep count" },
+      { "name": "Fps", "type": "int", "default": 30 },
+      { "name": "Verified", "type": "bool" }
+    ]
+  }
+}

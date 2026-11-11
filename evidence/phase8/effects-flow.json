@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "GGTT Visual Effects & Scenario Engine Flow Specification",
+  "version": "2.0.0",
+  "target_assembly": "GGTT.dll",
+  "mvid": "298ab416-d58b-4c6d-8e4a-91f20ef739a1",
+  "module_namespace": "GGTT.EffectsBridge.Effects",
+  "compositor_specification": "compositor-v2",
+  "limits": {
+    "max_layers": 32,
+    "max_audio_layers": 4,
+    "max_camera_reactions": 8,
+    "max_track_keys": 512,
+    "max_points_per_layer": 16,
+    "max_branch_effects": 8,
+    "max_branch_shape_masks": 8,
+    "point_coordinate_bounds": [0.0, 1.0]
+  },
+  "capabilities": [
+    "compositor-v2",
+    "camera-sync-v1",
+    "layer-visibility-v1",
+    "audio-assets-v1",
+    "layer-points-v1",
+    "face-reactions-v1",
+    "live-points-v1",
+    "point-tracks-v1",
+    "point-visibility-v1",
+    "camera-cutout-v1"
+  ],
+  "supported_assets": {
+    "video": [".mp4", ".webm"],
+    "image": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
+    "audio": [".wav", ".mp3", ".ogg"],
+    "data": [".json", ".atlas", ".moc3"]
+  },
+  "scenario_engine": {
+    "class": "GGTT.EffectsBridge.Effects.ScenarioEngine",
+    "methods": {
+      "constructor": "0x0600042b",
+      "reset": "0x0600042c",
+      "variable": "0x0600042d",
+      "tick": "0x0600042e",
+      "evaluate": "0x0600042f"
+    },
+    "condition_types": [
+      {
+        "keyword": "time",
+        "description": "Elapsed timeline or delta time check against threshold",
+        "operand": "numeric_seconds"
+      },
+      {
+        "keyword": "state",
+        "description": "Internal state variable evaluation",
+        "operators": ["eq", "ne"],
+        "operands": ["variable_name", "target_value"]
+      },
+      {
+        "keyword": "data",
+        "description": "Event payload data extraction and comparison",
+        "operators": ["eq", "ne"],
+        "operands": ["field_path", "target_value"]
+      },
+      {
+        "keyword": "random",
+        "description": "Stochastic probability evaluation via ScenarioRandom.Test",
+        "operand": "probability_0_to_1"
+      },
+      {
+        "keyword": "collision",
+        "description": "Geometric collision check between two InteractionZones or body anchors",
+        "operands": ["zone_a", "zone_b"]
+      },
+      {
+        "keyword": "all",
+        "description": "Logical conjunction (AND) across child conditions"
+      },
+      {
+        "keyword": "any",
+        "description": "Logical disjunction (OR) across child conditions"
+      }
+    ],
+    "action_types": [
+      {
+        "keyword": "once",
+        "description": "Execute action exactly once and remove from candidate set"
+      },
+      {
+        "keyword": "repeat",
+        "description": "Periodic recurring action with interval delay"
+      },
+      {
+        "keyword": "set_state",
+        "description": "Assign value to internal variable: _variables[key] = value"
+      },
+      {
+        "keyword": "add_state",
+        "description": "Delta addition to variable with min/max clamping: _variables[key] = Math.Clamp(_variables[key] + delta, min, max)"
+      },
+      {
+        "keyword": "cancel_pending",
+        "description": "Remove queued actions matching predicate from _pending queue"
+      },
+      {
+        "keyword": "exit",
+        "description": "Terminate rule execution or break current scenario branch"
+      }
+    ],
+    "queue_safety": {
+      "warning_message_vi": "Quá nhiều hành động đang chờ; giảm lặp kịch bản.",
+      "overflow_handling": "Sets Warning property and throttles action enqueueing"
+    }
+  },
+  "layer_pipeline": {
+    "layer_types": ["content", "media", "solid", "information", "text", "camera"],
+    "fit_modes": ["contain", "cover", "stretch"],
+    "blend_modes": ["normal", "alpha", "linear", "add", "multiply", "screen", "luma", "step"],
+    "chroma_key": {
+      "class": "GGTT.EffectsBridge.Effects.LayerChromaKey",
+      "properties": [
+        { "name": "Enabled", "type": "bool" },
+        { "name": "KeyColor", "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        { "name": "Similarity", "type": "double", "range": [0.0, 1.0] },
+        { "name": "Smoothness", "type": "double", "range": [0.0, 1.0] },
+        { "name": "SpillSuppression", "type": "double", "range": [0.0, 1.0] }
+      ]
+    },
+    "attachment": {
+      "anchors": ["head", "head-only", "person", "face", "bounds"],
+      "coordinate_spaces": ["normalized_screen", "content_relative"]
+    }
+  },
+  "ipc_trust_pipeline": {
+    "transport": "NamedPipe",
+    "pipe_naming_pattern": "^GGTT\\.Studio\\.Launch\\.[a-f0-9]{32}$",
+    "trust_verifier": {
+      "class": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+      "method_verify": "0x06000382",
+      "manifest_file": "effects-trust.json",
+      "signature_algorithm": "RSA-SHA256 with PKCS#1 padding",
+      "installed_binaries_budget": 95,
+      "cache_ttl_minutes": 15
+    },
+    "message_envelope": {
+      "handshake": "EffectControlHello",
+      "commands": "EffectCommand",
+      "replies": "EffectReply",
+      "status": "BridgeStatus"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "test_suite": "TC8_SCENARIO_ENGINE_EVALUATION",
+  "expected_results": [
+    {
+      "id": "tc8_01_time_condition_met",
+      "satisfied": true
+    },
+    {
+      "id": "tc8_02_time_condition_not_met",
+      "satisfied": false
+    },
+    {
+      "id": "tc8_03_state_equality_condition",
+      "satisfied": true
+    },
+    {
+      "id": "tc8_04_random_threshold_check",
+      "satisfied": true
+    },
+    {
+      "id": "tc8_05_bounding_box_collision",
+      "satisfied": true
+    },
+    {
+      "id": "tc8_06_action_queue_overflow_protection",
+      "overflow_triggered": true,
+      "warning_message": "Quá nhiều hành động đang chờ; giảm lặp kịch bản."
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# GGTT Offline Synthetic Conformance Test Suite (Phase 7)
+# GGTT Offline Synthetic Conformance Test Suite (Phase 8 Expansion)
 
 Bộ kiểm thử tuân thủ ngoại tuyến độc lập phục vụ việc kiểm chứng đặc tả kỹ thuật và hợp đồng hành vi của ứng dụng GGTT mà **hoàn toàn không cần chạy `GGTT.exe` hay nạp assembly `GGTT.dll`**.
 
@@ -20,24 +20,32 @@ Bộ kiểm thử tuân thủ ngoại tuyến độc lập phục vụ việc ki
 
 ```
 tests/conformance/
-├── README.md                      # Tài liệu hướng dẫn bộ kiểm thử
-├── run_tests.js                   # Test runner Node.js độc lập
-├── fixtures/                      # Dữ liệu đầu vào giả lập (Synthetic Test Cases)
-│   ├── tc1_combo_delta.json       # TC1: Tính toán gia số combo (Math.Max delta)
-│   ├── tc2_recipient_hierarchy.json # TC2: Phân bổ người nhận theo thứ tự 5 tầng
-│   ├── tc3_combo_lifecycle.json   # TC3: Vòng đời combo pending vs closed
-│   ├── tc4_pk_reconciliation.json # TC4: Chốt sổ ledger và ranh giới transaction
-│   ├── tc5_websocket_messages.json# TC5: Bắt tay SET_MACHINE_ID & debounce 250ms
-│   ├── tc6_mime_resolution.json   # TC6: Tra cứu 14 loại MIME & port hopping
-│   └── tc7_script_hash.json       # TC7: Xác minh băm SHA-256 kịch bản nhúng
-└── expected/                      # Kết quả kỳ vọng theo chuẩn CIL (Expected Results)
+├── README.md                           # Tài liệu hướng dẫn bộ kiểm thử
+├── run_tests.js                        # Test runner Node.js độc lập
+├── fixtures/                           # Dữ liệu đầu vào giả lập (Synthetic Test Cases)
+│   ├── tc1_combo_delta.json            # TC1: Tính toán gia số combo (Math.Max delta)
+│   ├── tc2_recipient_hierarchy.json    # TC2: Phân bổ người nhận theo thứ tự 5 tầng
+│   ├── tc3_combo_lifecycle.json        # TC3: Vòng đời combo pending -> closed
+│   ├── tc4_pk_reconciliation.json     # TC4: Chốt sổ ledger và ranh giới transaction
+│   ├── tc5_websocket_messages.json     # TC5: Bắt tay SET_MACHINE_ID & debounce 250ms
+│   ├── tc6_mime_resolution.json        # TC6: Tra cứu 14 loại MIME & port hopping
+│   ├── tc7_script_hash.json            # TC7: Xác minh băm SHA-256 kịch bản nhúng
+│   ├── tc8_scenario_engine.json        # TC8: Đánh giá điều kiện kịch bản & chống tràn hàng đợi
+│   ├── tc9_pose_squat_counter.json     # TC9: Hình học góc khớp gối, đếm squat & OBS auth
+│   ├── tc10_hotkey_and_scancode.json   # TC10: Bóc tách WM_HOTKEY & tra cứu scancode phần cứng
+│   └── tc11_sqlite_ledger_aggregation.json # TC11: Hợp nhất live_ledger & chống trùng gói quà
+└── expected/                           # Kết quả kỳ vọng theo chuẩn CIL (Expected Results)
     ├── tc1_combo_delta_expected.json
     ├── tc2_recipient_hierarchy_expected.json
     ├── tc3_combo_lifecycle_expected.json
     ├── tc4_pk_reconciliation_expected.json
     ├── tc5_websocket_messages_expected.json
     ├── tc6_mime_resolution_expected.json
-    └── tc7_script_hash_expected.json
+    ├── tc7_script_hash_expected.json
+    ├── tc8_scenario_engine_expected.json
+    ├── tc9_pose_squat_counter_expected.json
+    ├── tc10_hotkey_and_scancode_expected.json
+    └── tc11_sqlite_ledger_aggregation_expected.json
 ```
 
 ---
@@ -53,12 +61,16 @@ tests/conformance/
 | **TC5** | WebSocket Protocol & Throttling | `VERIFIED_CONFORMANCE` | `0x0600077d`, `0x06000311` |
 | **TC6** | HTTP MIME Types & Port Hopping | `VERIFIED_CONFORMANCE` | `0x060002aa`, `0x060007f3` |
 | **TC7** | Script Hash Integrity Check | `VERIFIED_CONFORMANCE` | `0x06000295` |
+| **TC8** | ScenarioEngine Conditions & Queue | `VERIFIED_CONFORMANCE` | `0x0600016e`, `0x06000171`, `0x06000176` |
+| **TC9** | AI Pose Squat Counter & OBS Auth | `VERIFIED_CONFORMANCE` | `0x060000a2`, `0x060000d1`, `0x060000eb` |
+| **TC10** | Hotkey Decoding & Hardware Scancodes | `VERIFIED_CONFORMANCE` | `0x0600020d`, `0x0600020e`, `0x06000a67` |
+| **TC11** | SQLite Ledger & Delivery Idempotency | `VERIFIED_CONFORMANCE` | `0x060004b5`, `0x060004e0`, `0x060004fa` |
 
 ---
 
-## 4. Hướng dẫn Chạy Kiểm thử (Execution)
+## 4. Hướng dẫn Chạy Kiểm thử (Execution Guide)
 
-Yêu cầu môi trường: Đã cài đặt Node.js (v18.0.0 trở lên).
+### Yêu cầu môi trường: Đã cài đặt Node.js (v18.0.0 trở lên).
 
 ```bash
 # Từ thư mục gốc của workspace:
@@ -68,11 +80,13 @@ node tests/conformance/run_tests.js
 ### Kết quả Chuẩn (Baseline Output):
 ```
 ================================================================
-       GGTT OFFLINE CONFORMANCE TEST HARNESS (PHASE 7)         
+       GGTT OFFLINE CONFORMANCE TEST HARNESS (PHASE 8)         
 ================================================================
+
+--- RUNNING TC1: COMBO DELTA CALCULATION (VERIFIED_CONFORMANCE) ---
 ...
 ================================================================
-SUMMARY: Total: 55 | Passed: 55 | Failed: 0
+SUMMARY: Total: 74 | Passed: 74 | Failed: 0
 STATUS : ALL CONFORMANCE CRITERIA SATISFIED (100% PASS)
 ================================================================
 ```

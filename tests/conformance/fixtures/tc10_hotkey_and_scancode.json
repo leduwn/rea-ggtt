@@ -1,0 +1,30 @@
+{
+  "test_suite": "TC10_HOTKEY_AND_SCANCODE_DISPATCH",
+  "cases": [
+    {
+      "id": "tc10_01_wm_hotkey_ctrl_alt_shift_a",
+      "lparam": 4259847,
+      "note": "(0x41 << 16) | 7"
+    },
+    {
+      "id": "tc10_02_wm_hotkey_ctrl_alt_minus",
+      "lparam": 12386307,
+      "note": "(0xBD << 16) | 3"
+    },
+    {
+      "id": "tc10_03_scancode_normal_key_down",
+      "scancode": 30,
+      "is_key_up": false
+    },
+    {
+      "id": "tc10_04_scancode_extended_key_up",
+      "scancode": 200,
+      "is_key_up": true
+    },
+    {
+      "id": "tc10_05_mouse_wheel_up",
+      "mouse_code": 264,
+      "is_down": true
+    }
+  ]
+}

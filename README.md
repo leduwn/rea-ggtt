@@ -48,18 +48,29 @@ rea-ggtiktok/
 │   ├── 15-combo-accounting-edge-cases.md # Phase 7: Phân tích toán học 12 trường hợp biên kế toán
 │   ├── 16-protocol-schema-verification.md# Phase 7: Lược đồ JSON WebSocket & bảng tra cứu 14 MIME
 │   ├── 17-clean-room-specification.md  # Phase 7: Bản đặc tả kiến trúc kỹ thuật phòng sạch hoàn chỉnh
-│   └── 18-phase7-handoff.md            # Phase 7: Báo cáo tổng kết và chuyển giao toàn dự án
+│   ├── 18-phase7-handoff.md            # Phase 7: Báo cáo tổng kết và chuyển giao toàn dự án
+│   ├── 19-reverse-engineering-coverage.md # Phase 8: Đính chính CLAIM-06 & Ma trận độ bao phủ 2.685 method
+│   ├── 20-ui-and-application-control-flow.md # Phase 8: Giao diện người dùng & luồng điều phối vòng đời
+│   ├── 21-effects-and-scenario-engine.md # Phase 8: Động cơ kỹ xảo hình ảnh & kịch bản tương tác
+│   ├── 22-ai-pose-and-obs-tracking.md  # Phase 8: Nhận diện chuyển động AI Squats & OBS Studio v5
+│   ├── 23-game-hotkeys-and-automation.md # Phase 8: Minecraft RCON, Phím nóng Win32 & DirectX scancodes
+│   ├── 24-persistence-and-lifecycle.md # Phase 8: winsqlite3 WAL, Sổ cái bất biến, cache dọn dẹp & update
+│   ├── 25-cross-module-integration.md  # Phase 8: Bản đồ tương tác toàn hệ thống & kiểm soát backpressure
+│   └── 26-phase8-handoff.md            # Phase 8: Báo cáo tổng kết & chuyển giao toàn diện giai đoạn 8
 ├── evidence/                           # Bằng chứng kỹ thuật Clean-Room (Derived Artifacts)
 │   ├── flows/                          # Đặc tả JSON cấu trúc luồng của 3 pipeline trọng điểm
-│   └── phase7/                         # Ma trận claim-matrix, contract-provenance, unresolved-claims
-│   # Ghi chú: Các tệp phân tích nhị phân thô (CIL disassembly, raw #US dumps, binary inventories)
-│   # được lưu giữ cục bộ ngoại tuyến và loại trừ khỏi kho git công khai theo nguyên tắc bảo vệ bản quyền.
+│   ├── phase7/                         # Ma trận claim-matrix, contract-provenance, unresolved-claims
+│   └── phase8/                         # Ma trận độ bao phủ 2.685 method, luồng hiệu ứng/tracking, an toàn
+│       ├── coverage-matrix.json        # Ma trận đầy đủ 2.685 phương thức theo 10 phân hệ chức năng
+│       ├── effects-flow.json           # Mô hình hóa luồng kỹ xảo 32 lớp & điều kiện kịch bản
+│       ├── tracking-flow.json          # Luồng AI Pose Tracking & OBS WebSocket v5 RPC
+│       └── sanitized-findings.json     # Báo cáo khử nhiễm an toàn các endpoint, webhook và tài nguyên
 ├── tests/                              # Bộ kiểm thử tuân thủ ngoại tuyến (Offline Conformance Harness)
-│   └── conformance/                    # Bộ test độc lập không tải nhị phân (55/55 assertions PASS)
-│       ├── fixtures/                   # Dữ liệu kiểm thử giả lập 7 nhóm TC1 -> TC7
+│   └── conformance/                    # Bộ test độc lập không tải nhị phân (74/74 assertions PASS)
+│       ├── fixtures/                   # Dữ liệu kiểm thử giả lập 11 nhóm TC1 -> TC11
 │       ├── expected/                   # Kết quả kỳ vọng theo đúng chỉ lệnh CIL
 │       ├── README.md                   # Hướng dẫn thực thi bộ kiểm thử
-│       └── run_tests.js                # Runner tự động kiểm tra tính tuân thủ
+│       └── run_tests.js                # Runner tự động kiểm tra tính tuân thủ (TC1-TC11)
 └── scripts/                            # Kịch bản phân tích tự động bằng Node.js
     ├── parse_methods.js                # Bộ trích xuất và lọc cấu trúc method từ REA retained view
     └── compare_inventory.js            # Kịch bản đối soát đối chiếu 360 tệp đĩa vs inventory JSON
@@ -105,5 +116,15 @@ rea-ggtiktok/
   - [x] Bản đặc tả kiến trúc phòng sạch hoàn chỉnh: [17-clean-room-specification.md](reports/17-clean-room-specification.md).
   - [x] Báo cáo chuyển giao tổng thể toàn dự án: [18-phase7-handoff.md](reports/18-phase7-handoff.md).
   - [x] Xây dựng bộ kiểm thử ngoại tuyến độc lập [tests/conformance/](tests/conformance/) (55/55 assertions PASS).
+- [x] **Phase 8: Systematic Reverse Engineering & Subsystem Coverage**:
+  - [x] Đính chính CLAIM-06, Overlay schema, Async SM và lập ma trận 2.685 method: [19-reverse-engineering-coverage.md](reports/19-reverse-engineering-coverage.md), [coverage-matrix.json](evidence/phase8/coverage-matrix.json).
+  - [x] Giao diện người dùng & luồng điều phối: [20-ui-and-application-control-flow.md](reports/20-ui-and-application-control-flow.md).
+  - [x] Động cơ hiệu ứng & kịch bản tương tác: [21-effects-and-scenario-engine.md](reports/21-effects-and-scenario-engine.md), [effects-flow.json](evidence/phase8/effects-flow.json).
+  - [x] Nhận diện chuyển động AI Squats & OBS Studio v5: [22-ai-pose-and-obs-tracking.md](reports/22-ai-pose-and-obs-tracking.md), [tracking-flow.json](evidence/phase8/tracking-flow.json).
+  - [x] Tích hợp Game Minecraft RCON, Phím nóng Win32 & DirectX scancodes: [23-game-hotkeys-and-automation.md](reports/23-game-hotkeys-and-automation.md).
+  - [x] Lưu trữ dữ liệu SQLite WAL, Kế toán sổ cái, Dọn dẹp cache & Cập nhật: [24-persistence-and-lifecycle.md](reports/24-persistence-and-lifecycle.md).
+  - [x] Tích hợp toàn hệ thống, Cơ chế đồng bộ đa luồng & Backpressure throttling: [25-cross-module-integration.md](reports/25-cross-module-integration.md).
+  - [x] Mở rộng bộ kiểm thử ngoại tuyến TC1-TC11: [run_tests.js](tests/conformance/run_tests.js) (74/74 assertions PASS, 100%).
+  - [x] Kiểm toán an toàn kho lưu trữ & Báo cáo chuyển giao tổng thể: [26-phase8-handoff.md](reports/26-phase8-handoff.md), [sanitized-findings.json](evidence/phase8/sanitized-findings.json).
 
 Mọi kết luận kỹ thuật đều đạt trạng thái kiểm toán chuẩn hóa (CONFIRMED / INFERRED / SPECULATIVE) dựa trên dữ liệu giải mã nhị phân có thể kiểm chứng độc lập. Clean-Room Ready 100%.
