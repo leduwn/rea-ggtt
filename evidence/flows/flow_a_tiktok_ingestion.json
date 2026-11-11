@@ -1,0 +1,50 @@
+{
+  "pipeline": "TikTok Event Ingestion",
+  "entry_point": "GGTT.Google_Tiktok_Form.InitBrowser_TT (0x060002c9)",
+  "async_state_machine": "<InitBrowser_TT>d__108 (0x060007b3)",
+  "components": [
+    {
+      "step": 1,
+      "name": "Browser Initialization",
+      "method": "InitBrowser_TT",
+      "token": "0x060002c9",
+      "details": "Initializes CoreWebView2Environment with userDataFolder and navigates to target TikTok livestream URL (Desktop or Mobile)."
+    },
+    {
+      "step": 2,
+      "name": "Script Fetch & Verification",
+      "method": "GGTT.EmbeddedScriptLoader.GetAsync",
+      "token": "0x0600028f",
+      "validator": "GGTT.EmbeddedScriptLoader.Validate (0x06000295)",
+      "details": "HTTP GET from jqsvn.com endpoint. Validates Content-Type, max length 1MB, checks for error/denied tokens, verifies presence of communicate_launcher and TikeqID, computes SHA-256."
+    },
+    {
+      "step": 3,
+      "name": "DOM Bootstrap Injection",
+      "method": "GGTT.EmbeddedScriptDocument.Bootstrap",
+      "token": "0x0600025b",
+      "details": "Executes JS IIFE checking location.href and window.__ggttEmbeddedCode state; sets state=\"ready\" and assigns unique session token."
+    },
+    {
+      "step": 4,
+      "name": "Script Payload Execution",
+      "method": "GGTT.EmbeddedScriptDocument.Inject",
+      "token": "0x0600025c",
+      "details": "Checks __ggttEmbeddedCode.state===\"ready\" and token matching. Transitions to \"executing\", evaluates remote script body, transitions to \"installed\", returns {ggttEmbeddedReady: token}."
+    },
+    {
+      "step": 5,
+      "name": "Injection Acknowledgment",
+      "method": "GGTT.EmbeddedScriptDocument.Acknowledged",
+      "token": "0x0600025d",
+      "details": "Parses JSON return from WebView2, verifies ggttEmbeddedReady matches document token."
+    },
+    {
+      "step": 6,
+      "name": "WebMessage Dispatcher",
+      "method": "GGTT.Google_Tiktok_Form.webView21_WebMessageReceived_1",
+      "token": "0x060002d2",
+      "details": "Extracts WebMessageAsString, parses event type, dispatches gifts to TeamScoringService.Gift or TeamChannelPkService.Record."
+    }
+  ]
+}

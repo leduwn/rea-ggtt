@@ -1,0 +1,28 @@
+{
+  "test_group": "TC6_MIME_AND_PORT_HOPPING",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x060002aa, 0x060007f3",
+  "description": "Exhaustive resolution of 14 MIME types in GetMimeType and port hopping retry limit",
+  "cases": [
+    { "extension": ".mp4", "filename": "boom.mp4" },
+    { "extension": ".webm", "filename": "sparkle.webm" },
+    { "extension": ".mp3", "filename": "sound.mp3" },
+    { "extension": ".wav", "filename": "bell.wav" },
+    { "extension": ".ogg", "filename": "theme.ogg" },
+    { "extension": ".png", "filename": "avatar.png" },
+    { "extension": ".jpg", "filename": "photo.jpg" },
+    { "extension": ".jpeg", "filename": "photo.jpeg" },
+    { "extension": ".gif", "filename": "anim.gif" },
+    { "extension": ".webp", "filename": "bg.webp" },
+    { "extension": ".json", "filename": "model3.json" },
+    { "extension": ".atlas", "filename": "char.atlas" },
+    { "extension": ".moc3", "filename": "live2d.moc3" },
+    { "extension": ".css", "filename": "style.css" },
+    { "extension": ".exe", "filename": "unknown.exe" }
+  ],
+  "port_hopping": {
+    "base_port": 6211,
+    "max_retries": 3,
+    "retry_delay_ms": 300
+  }
+}

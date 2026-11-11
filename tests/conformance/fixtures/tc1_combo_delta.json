@@ -1,0 +1,38 @@
+{
+  "test_group": "TC1_COMBO_DELTA_CALCULATION",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x06000a46",
+  "description": "Verify additive delta subtraction, Math.Max zero clamping, and zero-delta coin zeroing when quantity delta is 0",
+  "cases": [
+    {
+      "id": "tc1_01_first_packet",
+      "incoming": { "coins": 100, "quantity": 10, "combo_id": "c1" },
+      "existing": null
+    },
+    {
+      "id": "tc1_02_streak_increment",
+      "incoming": { "coins": 150, "quantity": 15, "combo_id": "c1" },
+      "existing": { "coins": 100, "quantity": 10, "combo_id": "c1", "closed": false }
+    },
+    {
+      "id": "tc1_03_duplicate_packet",
+      "incoming": { "coins": 150, "quantity": 15, "combo_id": "c1" },
+      "existing": { "coins": 150, "quantity": 15, "combo_id": "c1", "closed": false }
+    },
+    {
+      "id": "tc1_04_out_of_order_lower_packet",
+      "incoming": { "coins": 120, "quantity": 12, "combo_id": "c1" },
+      "existing": { "coins": 150, "quantity": 15, "combo_id": "c1", "closed": false }
+    },
+    {
+      "id": "tc1_05_quantity_zero_delta_coins_positive",
+      "incoming": { "coins": 160, "quantity": 15, "combo_id": "c1" },
+      "existing": { "coins": 150, "quantity": 15, "combo_id": "c1", "closed": false }
+    },
+    {
+      "id": "tc1_06_jump_streak",
+      "incoming": { "coins": 500, "quantity": 50, "combo_id": "c2" },
+      "existing": { "coins": 10, "quantity": 1, "combo_id": "c2", "closed": false }
+    }
+  ]
+}

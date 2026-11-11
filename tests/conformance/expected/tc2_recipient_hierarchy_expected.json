@@ -1,0 +1,36 @@
+{
+  "test_group": "TC2_RECIPIENT_HIERARCHY",
+  "category": "VERIFIED_CONFORMANCE",
+  "expected_results": [
+    {
+      "id": "tc2_01_ui_override_active",
+      "resolved_member_id": "streamer_alpha",
+      "tier_matched": 1,
+      "is_pending": false
+    },
+    {
+      "id": "tc2_02_combo_streak_lock",
+      "resolved_member_id": "streamer_beta",
+      "tier_matched": 2,
+      "is_pending": false
+    },
+    {
+      "id": "tc2_03_sender_target_match",
+      "resolved_member_id": "streamer_gamma",
+      "tier_matched": 3,
+      "is_pending": false
+    },
+    {
+      "id": "tc2_04_round_gift_rule_match",
+      "resolved_member_id": "streamer_delta",
+      "tier_matched": 4,
+      "is_pending": false
+    },
+    {
+      "id": "tc2_05_fallback_pending_unassigned",
+      "resolved_member_id": "",
+      "tier_matched": 5,
+      "is_pending": true
+    }
+  ]
+}

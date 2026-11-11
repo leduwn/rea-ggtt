@@ -1,0 +1,42 @@
+{
+  "unresolved_metadata": {
+    "phase": "PHASE 7 - TASK D",
+    "target": "GGTT Clean-Room Boundary & Risk Register",
+    "updated_at": "2026-11-11T09:15:00Z",
+    "status": "CATALOGUED"
+  },
+  "unresolved_items": [
+    {
+      "id": "UNRES-01",
+      "category": "SERVER_SIDE_BLACK_BOX",
+      "title": "Server-Side Script Generation Logic on jqsvn.com",
+      "observed_boundary": "EmbeddedScriptLoader::GetAsync (0x0600028f) calls https://jqsvn.com/google_tiktok/ggtt_script_loader.php",
+      "unknown_aspect": "The exact PHP backend script generation, license entitlement evaluation, and dynamic obfuscation techniques used on the remote server are unknown because safety rules forbid sending requests to third-party endpoints.",
+      "clean_room_resolution": "Clean-room architecture must avoid dependence on jqsvn.com. Implement an open-source TikTok Live connector (e.g. TikTokLiveSharp or open protocol connector) or self-hosted script repository."
+    },
+    {
+      "id": "UNRES-02",
+      "category": "SPECIFICATION_DECISION_REQUIRED",
+      "title": "SQLite Multi-Statement Transaction Atomicity in CommitGiftCombo",
+      "observed_boundary": "TeamStore::CommitGiftCombo (0x060004ae) runs sequential INSERT, UPDATE, DELETE statements without an enclosing BEGIN TRANSACTION block.",
+      "unknown_aspect": "Whether original developer intended non-transactional SQLite execution or simply relied on autocommit without considering mid-execution power-loss failure modes.",
+      "clean_room_resolution": "SPECIFICATION DECISION: Clean-room implementation must wrap the entire CommitGiftCombo sequence within an explicit atomic SQLite transaction (BEGIN IMMEDIATE ... COMMIT) with rollback on error."
+    },
+    {
+      "id": "UNRES-03",
+      "category": "DYNAMIC_PROTOCOL_DRIFT",
+      "title": "TikTok Web DOM Structure Volatility",
+      "observed_boundary": "Browser injection script relies on CSS classes and window properties that are subject to silent upstream modification by TikTok frontend developers.",
+      "unknown_aspect": "The exact rate and scope of future TikTok Live frontend obfuscation updates.",
+      "clean_room_resolution": "Architect the ingestion layer with an abstracted parser adapter and hot-reloadable rule definition engine rather than hardcoded DOM selectors."
+    },
+    {
+      "id": "UNRES-04",
+      "category": "REMOTE_TELEMETRY",
+      "title": "Discord Crash Reporting Webhook Payload Schema",
+      "observed_boundary": "AppLogger::ReportErrorAsync sends diagnostic crash dumps to hardcoded Discord Webhook URL.",
+      "unknown_aspect": "Full taxonomy of client environment metrics gathered during production crashes.",
+      "clean_room_resolution": "Completely remove Discord webhook hardcoded telemetry in clean-room implementation; replace with standard local structured logging."
+    }
+  ]
+}

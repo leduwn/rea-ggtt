@@ -1,0 +1,88 @@
+{
+  "provenance_metadata": {
+    "phase": "PHASE 7 - TASK B",
+    "specification": "GGTT Behavioral Contracts & Protocol Provenance",
+    "generated_at": "2026-11-11T09:00:00Z",
+    "status": "VALIDATED"
+  },
+  "pipelines": {
+    "pipeline_a": {
+      "name": "TikTok Event Ingestion Pipeline",
+      "boundary": "Chromium WebView2 Script Hook -> WinForms Native Message Handler",
+      "source_methods": [
+        "GGTT.Google_Tiktok_Form::webView21_WebMessageReceived_1 (0x060002d2)",
+        "GGTT.Google_Tiktok_Form::InitBrowser_TT (0x060002c9)",
+        "GGTT.Google_Tiktok_Form+<InitBrowser_TT>d__72::MoveNext (0x060007b3)"
+      ],
+      "injection_mechanism": {
+        "script_id": "window.__ggttEmbeddedCode",
+        "bootstrap_token": "0x0600025b",
+        "validation_token": "0x06000295",
+        "bridge_api": "window.chrome.webview.postMessage"
+      },
+      "fields": {
+        "verified_client_fields": [
+          {"name": "type", "type": "string", "values": ["gift", "comment", "like", "member"], "role": "Discriminator"},
+          {"name": "gift_id", "type": "string", "role": "Gift Catalog Identifier"},
+          {"name": "gift_name", "type": "string", "role": "Gift Display Name"},
+          {"name": "diamond_count", "type": "int32", "role": "Base Coin Value per Unit"},
+          {"name": "repeat_count", "type": "int32", "role": "Cumulative Gift Count in Streak"},
+          {"name": "combo_count", "type": "int32", "role": "Combo Streak Sequence Counter"},
+          {"name": "user_id", "type": "string", "role": "Sender Unique Platform ID"},
+          {"name": "nickname", "type": "string", "role": "Sender Screen Name"},
+          {"name": "avatar_url", "type": "string", "role": "Sender Profile Image URL"},
+          {"name": "sec_uid", "type": "string", "role": "TikTok Encrypted Security UID"},
+          {"name": "timestamp", "type": "int64", "role": "Unix Epoch Milliseconds"}
+        ],
+        "injected_hook_fields": [
+          {"name": "client_time", "type": "int64", "provenance": "JavaScript Date.now() at hook capture"},
+          {"name": "page_url", "type": "string", "provenance": "window.location.href of active live room"},
+          {"name": "session_uuid", "type": "string", "provenance": "Hook ephemeral execution GUID"}
+        ],
+        "unverified_server_fields": [
+          {"name": "to_user_id", "status": "DROPPED", "note": "TikTok native recipient field, ignored by GGTT hook; GGTT relies entirely on internal recipient resolution rules"},
+          {"name": "trace_id", "status": "DROPPED", "note": "TikTok transport tracing metadata not passed to managed layer"}
+        ]
+      }
+    },
+    "pipeline_b": {
+      "name": "Live PK Scoring & Combo Accounting Pipeline",
+      "boundary": "Event Dispatcher -> TeamScoringService -> SQLite TeamStore",
+      "source_methods": [
+        "GGTT.Team.TeamScoringService+<>c__DisplayClass15_0::<Gift>b__0 (0x06000a46)",
+        "GGTT.Team.TeamStore::ReadCombo (0x060004ab)",
+        "GGTT.Team.TeamStore::WriteCombo (0x060004ac)",
+        "GGTT.Team.TeamStore::CommitGiftCombo (0x060004ae)",
+        "GGTT.Team.TeamChannelPkService::Recipient (0x0600049d)",
+        "GGTT.Team.TeamChannelPkService::Record (0x0600049e)",
+        "GGTT.Team.TeamScoringService::AddLedger (0x0600063a)"
+      ],
+      "persistence_model": {
+        "pending_combos": "Ephemeral active streaks (INSERT ... ON CONFLICT(id) DO UPDATE SET json=excluded.json)",
+        "combos": "Finalized combos (INSERT ... ON CONFLICT(id) DO UPDATE SET json=excluded.json)",
+        "pending_gifts": "Incremental delta events awaiting final combo consolidation",
+        "ledger": "Audited double-entry journal entries for PK rounds",
+        "channel_pk_income": "Per-streamer revenue tracking"
+      }
+    },
+    "pipeline_c": {
+      "name": "WebSocket & Overlay Protocol Pipeline",
+      "boundary": "Google_Tiktok_Form -> Fleck Server (3784) & HttpListener (6211) -> OBS Overlay",
+      "source_methods": [
+        "GGTT.Google_Tiktok_Form::StartWebSocketServer (0x060002ab)",
+        "GGTT.Google_Tiktok_Form+<>c__DisplayClass69_1::<StartWebSocketServer>b__1 (0x0600077d)",
+        "GGTT.Google_Tiktok_Form::SendTeamState (0x06000311)",
+        "GGTT.Google_Tiktok_Form::SendSocketMessageAsync (0x060002a1)",
+        "GGTT.Google_Tiktok_Form::StartMediaServerCore (0x060002a6)",
+        "GGTT.Google_Tiktok_Form+<StartMediaServerCore>d__63::MoveNext (0x060007f3)",
+        "GGTT.Google_Tiktok_Form::GetMimeType (0x060002aa)"
+      ],
+      "ports": {
+        "websocket": 3784,
+        "media_http": 6211,
+        "media_http_max_retry_port": 6214
+      },
+      "throttling_ms": 250
+    }
+  }
+}

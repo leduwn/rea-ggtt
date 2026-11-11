@@ -1,0 +1,30 @@
+{
+  "test_group": "TC3_COMBO_LIFECYCLE",
+  "category": "VERIFIED_CONFORMANCE",
+  "expected_results": [
+    {
+      "id": "tc3_01_active_combo_persistence",
+      "target_table": "pending_combos",
+      "delete_from_pending": false
+    },
+    {
+      "id": "tc3_02_close_combo_persistence",
+      "target_table": "combos",
+      "delete_from_pending": true
+    },
+    {
+      "id": "tc3_03_closed_existing_with_empty_comboid",
+      "reset_existing_to_null": true,
+      "calculated_delta_coins": 10,
+      "calculated_delta_quantity": 1,
+      "note": "CIL IL_0968 executes ldnull to initiate a fresh sequence"
+    },
+    {
+      "id": "tc3_04_closed_existing_with_matching_comboid",
+      "reset_existing_to_null": false,
+      "calculated_delta_coins": 0,
+      "calculated_delta_quantity": 0,
+      "note": "Combo retains existing values and suppresses delta"
+    }
+  ]
+}

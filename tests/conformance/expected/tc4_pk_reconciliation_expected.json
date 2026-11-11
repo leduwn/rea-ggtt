@@ -1,0 +1,27 @@
+{
+  "test_group": "TC4_PK_RECONCILIATION",
+  "category": "VERIFIED_CONFORMANCE",
+  "expected_results": [
+    {
+      "id": "tc4_01_single_recipient_streak",
+      "total_coins": 100,
+      "total_quantity": 10,
+      "ledger_member_id": "streamer_1",
+      "parts_count": 3
+    },
+    {
+      "id": "tc4_02_multi_recipient_streak_split",
+      "total_coins": 50,
+      "total_quantity": 5,
+      "ledger_member_id": "",
+      "parts_count": 2,
+      "note": "CIL IL_023b sets ledger member_id to empty string when distinct count != 1"
+    },
+    {
+      "id": "tc4_03_transaction_boundary_specification",
+      "category": "SPECIFICATION_TEST",
+      "atomic_commit_required": true,
+      "rollback_on_failure": true
+    }
+  ]
+}

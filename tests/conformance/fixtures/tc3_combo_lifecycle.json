@@ -1,0 +1,30 @@
+{
+  "test_group": "TC3_COMBO_LIFECYCLE",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x060004ab, 0x060004ac, 0x06000a46",
+  "description": "Lifecycle transition between pending_combos and combos, plus existingCombo reset logic when Closed == true",
+  "cases": [
+    {
+      "id": "tc3_01_active_combo_persistence",
+      "action": "WRITE_COMBO",
+      "combo": { "id": "streak_1", "coins": 100, "quantity": 10, "closed": false }
+    },
+    {
+      "id": "tc3_02_close_combo_persistence",
+      "action": "WRITE_COMBO",
+      "combo": { "id": "streak_1", "coins": 100, "quantity": 10, "closed": true }
+    },
+    {
+      "id": "tc3_03_closed_existing_with_empty_comboid",
+      "action": "EVALUATE_EXISTING_COMBO",
+      "existing": { "id": "streak_1", "coins": 100, "quantity": 10, "closed": true },
+      "incoming_gift": { "coins": 10, "quantity": 1, "combo_id": "" }
+    },
+    {
+      "id": "tc3_04_closed_existing_with_matching_comboid",
+      "action": "EVALUATE_EXISTING_COMBO",
+      "existing": { "id": "streak_1", "coins": 100, "quantity": 10, "closed": true },
+      "incoming_gift": { "coins": 100, "quantity": 10, "combo_id": "streak_1" }
+    }
+  ]
+}

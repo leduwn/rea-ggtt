@@ -1,0 +1,43 @@
+{
+  "test_group": "TC1_COMBO_DELTA_CALCULATION",
+  "category": "VERIFIED_CONFORMANCE",
+  "expected_results": [
+    {
+      "id": "tc1_01_first_packet",
+      "delta_coins": 100,
+      "delta_quantity": 10,
+      "should_apply_score": true
+    },
+    {
+      "id": "tc1_02_streak_increment",
+      "delta_coins": 50,
+      "delta_quantity": 5,
+      "should_apply_score": true
+    },
+    {
+      "id": "tc1_03_duplicate_packet",
+      "delta_coins": 0,
+      "delta_quantity": 0,
+      "should_apply_score": false
+    },
+    {
+      "id": "tc1_04_out_of_order_lower_packet",
+      "delta_coins": 0,
+      "delta_quantity": 0,
+      "should_apply_score": false
+    },
+    {
+      "id": "tc1_05_quantity_zero_delta_coins_positive",
+      "delta_coins": 0,
+      "delta_quantity": 0,
+      "should_apply_score": false,
+      "note": "CIL IL_0a19 zeroes deltaCoins because deltaQuantity == 0"
+    },
+    {
+      "id": "tc1_06_jump_streak",
+      "delta_coins": 490,
+      "delta_quantity": 49,
+      "should_apply_score": true
+    }
+  ]
+}

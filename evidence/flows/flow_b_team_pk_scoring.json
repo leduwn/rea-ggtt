@@ -1,0 +1,49 @@
+{
+  "pipeline": "Team PK & Scoring Pipeline",
+  "entry_point": "GGTT.Team.TeamScoringService.Gift (0x0600063c)",
+  "closure": "<>c__DisplayClass25_0.<Gift>b__0 (0x06000a46)",
+  "components": [
+    {
+      "step": 1,
+      "name": "Gift Reception & Validation",
+      "method": "TeamScoringService.Gift",
+      "token": "0x0600063c",
+      "details": "Constructs closure <>c__DisplayClass25_0, captures gift, this, onIncomeDelta, recipientOverride. Calls TeamStore.Change."
+    },
+    {
+      "step": 2,
+      "name": "Diamond & System ID Filtering",
+      "token": "0x06000a46",
+      "instructions": "IL_001a - IL_0061",
+      "details": "Checks gift ID (e.g. 9981 diamond check, 12210 check). Rejects invalid gifts with \"ignored\" or \"invalid\"."
+    },
+    {
+      "step": 3,
+      "name": "Timing & Round Validation",
+      "token": "0x06000a46",
+      "instructions": "IL_01f4 - IL_0240",
+      "details": "Verifies occurrence time against round boundaries. Rejects out-of-round gifts with \"invalid_time\"."
+    },
+    {
+      "step": 4,
+      "name": "Recipient Resolution Hierarchy",
+      "token": "0x06000a46",
+      "instructions": "IL_0425 - IL_077b",
+      "details": "Hierarchy: 1. recipientOverride; 2. Existing combo target lock; 3. sender_targets SQLite lookup (, ); 4. TeamPkGiftRule round goal mapping; 5. Unassigned / pending."
+    },
+    {
+      "step": 5,
+      "name": "Combo Streak & Delta Calculation",
+      "token": "0x06000a46",
+      "instructions": "IL_090d - IL_09be",
+      "details": "Reads existing combo from SQLite via TeamStore.ReadCombo. Computes: deltaCoins = Math.Max(0, gift.Coins - existingCombo.Coins); deltaQuantity = Math.Max(0, gift.Quantity - existingCombo.Quantity); if deltaQuantity == 0 then deltaCoins = 0."
+    },
+    {
+      "step": 6,
+      "name": "Ledger Journaling",
+      "method": "TeamScoringService.AddLedger",
+      "token": "0x0600063a",
+      "details": "Inserts ledger record into SQLite committed_ledger table with calculated delta coins, occurred_at timestamp, sender_id, member_id, and gift_id."
+    }
+  ]
+}

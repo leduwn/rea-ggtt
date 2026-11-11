@@ -1,0 +1,30 @@
+{
+  "test_group": "TC4_PK_RECONCILIATION",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x060004ae, 0x0600063a",
+  "description": "Multi-packet streak aggregation into ledger row and member_id resolution when single vs multiple distinct recipients exist",
+  "cases": [
+    {
+      "id": "tc4_01_single_recipient_streak",
+      "journal_id": "j_alpha_1",
+      "pending_events": [
+        { "id": 1, "occurred_at": 1000, "coins": 10, "quantity": 1, "member_id": "streamer_1" },
+        { "id": 2, "occurred_at": 1002, "coins": 40, "quantity": 4, "member_id": "streamer_1" },
+        { "id": 3, "occurred_at": 1005, "coins": 50, "quantity": 5, "member_id": "streamer_1" }
+      ]
+    },
+    {
+      "id": "tc4_02_multi_recipient_streak_split",
+      "journal_id": "j_beta_2",
+      "pending_events": [
+        { "id": 1, "occurred_at": 2000, "coins": 20, "quantity": 2, "member_id": "streamer_1" },
+        { "id": 2, "occurred_at": 2004, "coins": 30, "quantity": 3, "member_id": "streamer_2" }
+      ]
+    },
+    {
+      "id": "tc4_03_transaction_boundary_specification",
+      "category": "SPECIFICATION_TEST",
+      "description": "Clean-room requirement: wrapping CommitGiftCombo in an explicit SQLite ACID transaction to avoid orphaned records"
+    }
+  ]
+}

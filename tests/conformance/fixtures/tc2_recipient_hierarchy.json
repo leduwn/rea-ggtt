@@ -1,0 +1,53 @@
+{
+  "test_group": "TC2_RECIPIENT_HIERARCHY",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x06000a46, 0x0600049d",
+  "description": "Evaluate 5-tier resolution priority: (1) UI Override, (2) Active Combo Lock, (3) Sender Target, (4) Round Gift Rule, (5) Pending Unassigned",
+  "cases": [
+    {
+      "id": "tc2_01_ui_override_active",
+      "context": {
+        "recipient_override": "streamer_alpha",
+        "existing_combo_target": "streamer_beta",
+        "sender_target": "streamer_gamma",
+        "round_gift_rule_target": "streamer_delta"
+      }
+    },
+    {
+      "id": "tc2_02_combo_streak_lock",
+      "context": {
+        "recipient_override": null,
+        "existing_combo_target": "streamer_beta",
+        "sender_target": "streamer_gamma",
+        "round_gift_rule_target": "streamer_delta"
+      }
+    },
+    {
+      "id": "tc2_03_sender_target_match",
+      "context": {
+        "recipient_override": null,
+        "existing_combo_target": null,
+        "sender_target": "streamer_gamma",
+        "round_gift_rule_target": "streamer_delta"
+      }
+    },
+    {
+      "id": "tc2_04_round_gift_rule_match",
+      "context": {
+        "recipient_override": null,
+        "existing_combo_target": null,
+        "sender_target": null,
+        "round_gift_rule_target": "streamer_delta"
+      }
+    },
+    {
+      "id": "tc2_05_fallback_pending_unassigned",
+      "context": {
+        "recipient_override": null,
+        "existing_combo_target": null,
+        "sender_target": null,
+        "round_gift_rule_target": null
+      }
+    }
+  ]
+}

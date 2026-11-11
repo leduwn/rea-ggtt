@@ -1,0 +1,36 @@
+# ==============================================================================
+# GGTT Reverse Engineering - Clean-Room Repository Ignore Policy
+# ==============================================================================
+
+# 1. Raw Reverse Engineering Evidence & Proprietary Dumps
+# (Kept offline in local analyst storage to comply with copyright & safety rules)
+evidence/binary/
+evidence/cil/
+evidence/functions/
+evidence/resources/
+evidence/strings/
+evidence/verified/
+evidence/xrefs/
+
+# 2. Local Environment & Development Artifacts
+.claude/
+*.lock
+*.log
+.env*
+node_modules/
+
+# 3. Binaries, Databases & Compiled Artifacts
+*.exe
+*.dll
+*.onnx
+*.pak
+*.pdb
+*.bin
+*.db
+*.sqlite
+*.sqlite3
+
+# 4. OS-Specific Metadata
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,89 @@
+{
+  "audit_metadata": {
+    "phase": "PHASE 7 - EVIDENCE HARDENING & BEHAVIORAL CONTRACT VALIDATION",
+    "target_binary": "C:\\Program Files (x86)\\GGTT\\GGTT.dll",
+    "mvid": "298ab416-d58b-4c6d-8e4a-91f20ef739a1",
+    "sha256": "6ee719dd26a248e6295429e523c2220b8e87a4a98168ea0626174aa1fb0ef6b5",
+    "audit_timestamp": "2026-11-11T08:55:00Z",
+    "status": "COMPLETED"
+  },
+  "claims": [
+    {
+      "claim_id": "CLAIM-01",
+      "topic": "Absence of Combo Multiplier",
+      "statement": "GGTT combo scoring does not apply any mathematical multiplier (e.g. 1.5x, 2x, streak bonuses). It uses strictly additive delta subtraction based on previous cumulative totals.",
+      "status": "CONFIRMED",
+      "method_token": "0x06000a46",
+      "method_name": "GGTT.Team.TeamScoringService+<>c__DisplayClass15_0::<Gift>b__0",
+      "cil_evidence_file": "evidence/cil/0x06000a46_TeamScoringService_Gift_b0.cil",
+      "instruction_range": "IL_09e0 - IL_0a35",
+      "verification_proof": "CIL instructions calculate deltaCoins = Math.Max(0, gift.Coins - existingCombo.Coins) and deltaQuantity = Math.Max(0, gift.Quantity - existingCombo.Quantity). If deltaQuantity == 0, deltaCoins is set to 0. No multiplication opcode (mul, mul.ovf) is present anywhere in the scoring path."
+    },
+    {
+      "claim_id": "CLAIM-02",
+      "topic": "Recipient 5-Tier Resolution Hierarchy",
+      "statement": "Recipient assignment strictly follows a 5-tier priority hierarchy: (1) UI manual override, (2) Active combo streak lock, (3) Dedicated sender target rule, (4) Round gift rule, (5) Pending unassigned queue.",
+      "status": "CONFIRMED",
+      "method_token": "0x06000a46, 0x0600049d",
+      "method_name": "GGTT.Team.TeamChannelPkService::Recipient / TeamScoringService::<Gift>b__0",
+      "cil_evidence_file": "evidence/cil/0x0600049d_TeamChannelPkService_Recipient.cil",
+      "instruction_range": "IL_0000 - IL_0180",
+      "verification_proof": "Tier 1 checks UI override parameter != null; Tier 2 inspects active existingCombo.TargetRule; Tier 3 queries SQLite 'sender_targets' table by sender_id; Tier 4 queries active round 'TeamPkGiftRule'; Tier 5 defaults to empty member_id ('') which routes the gift to 'pending_gifts' table."
+    },
+    {
+      "claim_id": "CLAIM-03",
+      "topic": "Closed vs New Combo State Machine",
+      "statement": "When a combo streak closes (Closed == true), TeamStore moves the record from 'pending_combos' to 'combos' and deletes the pending entry. In scoring, if a closed combo is encountered and gift.ComboId is empty, state resets to null initiating a new streak.",
+      "status": "CONFIRMED",
+      "method_token": "0x060004ab, 0x060004ac, 0x06000a46",
+      "method_name": "GGTT.Team.TeamStore::ReadCombo / WriteCombo / TeamScoringService::<Gift>b__0",
+      "cil_evidence_file": "evidence/cil/0x060004ac_TeamStore_WriteCombo.cil, evidence/cil/0x060004ab_TeamStore_ReadCombo.cil",
+      "instruction_range": "WriteCombo: IL_0000 - IL_0087; Gift_b0: IL_0948 - IL_0968",
+      "verification_proof": "WriteCombo checks get_Closed(); writes to pending_combos if false, combos if true; executes DELETE FROM pending_combos WHERE id=$id when Closed is true. Gift_b0 IL_0948-IL_0968 checks if existingCombo.Closed && gift.ComboId == '', resetting existingCombo to null."
+    },
+    {
+      "claim_id": "CLAIM-04",
+      "topic": "SET_MACHINE_ID Handshake Role",
+      "statement": "SET_MACHINE_ID is an identity announcement emitted by the server upon WebSocket connection to configure client overlays, not a cryptographic authentication mechanism.",
+      "status": "CONFIRMED",
+      "method_token": "0x0600077d",
+      "method_name": "GGTT.Google_Tiktok_Form+<>c__DisplayClass69_1::<StartWebSocketServer>b__1",
+      "cil_evidence_file": "evidence/cil/0x0600077d__StartWebSocketServer_b__1.cil",
+      "instruction_range": "IL_0000 - IL_0078",
+      "verification_proof": "On client connection (OnOpen), server constructs payload new { type = 'SET_MACHINE_ID', machineId = this.machineId }, serializes via JSON, and broadcasts. No client challenge, signature verification, token validation, or rejection branching exists."
+    },
+    {
+      "claim_id": "CLAIM-05",
+      "topic": "250ms Client-Side Throttling",
+      "statement": "SendTeamState throttles broadcast state updates to a minimum interval of 250 milliseconds to protect OBS browser overlays from rendering lag.",
+      "status": "CONFIRMED",
+      "method_token": "0x06000311",
+      "method_name": "GGTT.Google_Tiktok_Form::SendTeamState",
+      "cil_evidence_file": "evidence/cil/0x06000311_Google_Tiktok_Form_SendTeamState.cil",
+      "instruction_range": "IL_0000 - IL_0045",
+      "verification_proof": "Subtracts teamLastStateSent from DateTime.UtcNow, evaluates TotalMilliseconds < 250.0. If true, suppresses immediate broadcast and queues update on a timer."
+    },
+    {
+      "claim_id": "CLAIM-06",
+      "topic": "Script Hash Integrity Verification",
+      "statement": "EmbeddedScriptLoader verifies the SHA-256 hash of loaded injection scripts against manifest hashes before executing them in WebView2.",
+      "status": "CONFIRMED",
+      "method_token": "0x06000295",
+      "method_name": "GGTT.EmbeddedScriptLoader::Validate",
+      "cil_evidence_file": "evidence/cil/0x06000295_EmbeddedScriptLoader_Validate.cil",
+      "instruction_range": "IL_0000 - IL_006a",
+      "verification_proof": "Computes SHA-256 via System.Security.Cryptography.SHA256, converts to lowercase hexadecimal string, and compares using String.Equals(ordinalIgnoreCase) with expected signature in effects-trust.json manifest."
+    },
+    {
+      "claim_id": "CLAIM-07",
+      "topic": "HTTP Media Server Dynamic Port Binding",
+      "statement": "The local HTTP media server binds to port 6211 on all interfaces or localhost, retrying up to 3 times on port + 1 if an address conflict occurs, serving 14 specific MIME types.",
+      "status": "CONFIRMED",
+      "method_token": "0x060002a6, 0x060002aa",
+      "method_name": "GGTT.Google_Tiktok_Form::StartMediaServerCore / GetMimeType",
+      "cil_evidence_file": "evidence/cil/0x060002a6_Google_Tiktok_Form_StartMediaServerCore.cil, evidence/cil/0x060002aa_Google_Tiktok_Form_GetMimeType.cil",
+      "instruction_range": "StartMediaServerCore: IL_0000 - IL_009f; GetMimeType: IL_0000 - IL_0085",
+      "verification_proof": "Prefixes include 'http://*:6211/media/' and fallback 'http://127.0.0.1:6211/media/'. In catch block for HttpListenerException (Win32 error 183 / ERROR_ALREADY_EXISTS), increments port counter (port++) with loop condition <= base_port + 3. GetMimeType contains exact switch table for 14 extensions."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "test_group": "TC7_SCRIPT_HASH_VERIFICATION",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x06000295",
+  "description": "Validation of script byte size, token constraints, and SHA-256 calculation matching manifest",
+  "cases": [
+    {
+      "id": "tc7_01_valid_script",
+      "script_content": "var TikLangJz = 1;\nvar TikHixId = 2;\nvar TikeqID = 3;\nfunction communicate_launcher() { return true; }",
+      "declared_trust_hash": "compute_sha256"
+    },
+    {
+      "id": "tc7_02_oversized_script",
+      "size_bytes": 1048577,
+      "description": "Script exceeding 1048576 bytes threshold"
+    },
+    {
+      "id": "tc7_03_missing_required_token",
+      "script_content": "console.log('malicious injected script');"
+    }
+  ]
+}

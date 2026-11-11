@@ -1,0 +1,29 @@
+{
+  "test_group": "TC5_WEBSOCKET_MESSAGES_AND_THROTTLE",
+  "category": "VERIFIED_CONFORMANCE",
+  "expected_results": [
+    {
+      "id": "tc5_01_handshake_message",
+      "emitted_json": {
+        "type": "SET_MACHINE_ID",
+        "machineId": "DESKTOP-GGTT-001"
+      },
+      "requires_client_auth": false
+    },
+    {
+      "id": "tc5_02_throttle_within_250ms",
+      "should_broadcast": false,
+      "reason": "Suppressed because elapsed_ms < 250.0 and force_update == false"
+    },
+    {
+      "id": "tc5_03_throttle_bypass_when_forced",
+      "should_broadcast": true,
+      "reason": "Broadcast immediately because force_update == true (IL_005f brtrue.s)"
+    },
+    {
+      "id": "tc5_04_throttle_after_250ms",
+      "should_broadcast": true,
+      "reason": "Broadcast allowed because elapsed_ms >= 250.0"
+    }
+  ]
+}

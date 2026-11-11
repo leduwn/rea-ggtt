@@ -1,0 +1,24 @@
+{
+  "test_group": "TC7_SCRIPT_HASH_VERIFICATION",
+  "category": "VERIFIED_CONFORMANCE",
+  "expected_results": [
+    {
+      "id": "tc7_01_valid_script",
+      "expected_sha256": "914949e6639feb2f95e3695cade8de58305e996a7d421e5f08acb5138c31aec6",
+      "validation_status": "VALID",
+      "action": "ALLOW_INJECTION"
+    },
+    {
+      "id": "tc7_02_oversized_script",
+      "validation_status": "INVALID_RESPONSE",
+      "action": "THROW_EXCEPTION",
+      "reason": "Exceeds 1048576 bytes limit (IL_0007 ble.s 20)"
+    },
+    {
+      "id": "tc7_03_missing_required_token",
+      "validation_status": "INVALID_RESPONSE",
+      "action": "THROW_EXCEPTION",
+      "reason": "Missing required signature tokens (IL_00c4 - IL_00f7)"
+    }
+  ]
+}

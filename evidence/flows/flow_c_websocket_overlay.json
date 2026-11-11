@@ -1,0 +1,46 @@
+{
+  "pipeline": "Local WebSocket & Media Server Overlay",
+  "entry_points": [
+    "GGTT.Google_Tiktok_Form.StartWebSocketServer (0x060002ab)",
+    "GGTT.Google_Tiktok_Form.StartMediaServer (0x060002a5)"
+  ],
+  "components": [
+    {
+      "step": 1,
+      "name": "WebSocket Server Initialization",
+      "method": "StartWebSocketServer",
+      "token": "0x060002ab",
+      "port": 3784,
+      "details": "Starts Fleck WebSocket server on ws://127.0.0.1:3784. Registers OnOpen, OnClose, and OnMessage handlers for OBS Browser Source clients."
+    },
+    {
+      "step": 2,
+      "name": "Media Server Initialization",
+      "method": "StartMediaServerCore",
+      "token": "0x060002a6",
+      "port": 6211,
+      "details": "Starts HttpListener on http://localhost:6211/. Routes requests for local static assets (MP4, WebM, WebP, PNG, Live2D Moc3, Atlas, JSON)."
+    },
+    {
+      "step": 3,
+      "name": "MIME Type Resolution",
+      "method": "GetMimeType",
+      "token": "0x060002aa",
+      "details": "Maps file extensions to standard MIME headers: video/mp4, video/webm, image/webp, image/png, application/json, etc."
+    },
+    {
+      "step": 4,
+      "name": "Broadcast State Dispatch",
+      "method": "SendSocketMessageAsync",
+      "token": "0x060002a1",
+      "details": "Serializes JSON payload and broadcasts asynchronously to all active WebSocket client sessions."
+    },
+    {
+      "step": 5,
+      "name": "Team State Sync",
+      "method": "SendTeamState",
+      "token": "0x06000311",
+      "details": "Constructs snapshot of PK match state (scores, round time remaining, combo streaks, leaderboards) and broadcasts to port 3784."
+    }
+  ]
+}

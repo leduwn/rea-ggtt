@@ -1,0 +1,31 @@
+{
+  "test_group": "TC5_WEBSOCKET_MESSAGES_AND_THROTTLE",
+  "category": "VERIFIED_CONFORMANCE",
+  "provenance_method": "0x0600077d, 0x06000311",
+  "description": "Validate SET_MACHINE_ID emission on connect and 250ms throttling logic in SendTeamState",
+  "cases": [
+    {
+      "id": "tc5_01_handshake_message",
+      "action": "ON_OPEN",
+      "machine_id": "DESKTOP-GGTT-001"
+    },
+    {
+      "id": "tc5_02_throttle_within_250ms",
+      "action": "SEND_TEAM_STATE",
+      "elapsed_ms": 120,
+      "force_update": false
+    },
+    {
+      "id": "tc5_03_throttle_bypass_when_forced",
+      "action": "SEND_TEAM_STATE",
+      "elapsed_ms": 120,
+      "force_update": true
+    },
+    {
+      "id": "tc5_04_throttle_after_250ms",
+      "action": "SEND_TEAM_STATE",
+      "elapsed_ms": 255,
+      "force_update": false
+    }
+  ]
+}
