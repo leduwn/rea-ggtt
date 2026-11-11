@@ -1,0 +1,211 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "PHASE_10",
+  "audit_date": "2026-11-11",
+  "target_binary": "GGTT.dll (v1.1.4.12, SHA-256: 6ee719dd26a248e6295429e523c2220b8e87a4a98168ea0626174aa1fb0ef6b5)",
+  "summary": {
+    "total_canonical_claims": 12,
+    "cil_proven_count": 12,
+    "debunked_theories_count": 3,
+    "conformance_suites_count": 11,
+    "mutation_kill_rate": "100.0% (11/11)",
+    "boundary_pass_rate": "100.0% (15/15)"
+  },
+  "canonical_claims": [
+    {
+      "claim_id": "CLM-01",
+      "title": "Additive Combo Delta Scoring (No Multipliers)",
+      "subsystem": "LIVE_PK_TEAM_SCORING",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x06000a46"
+      ],
+      "cil_anchors": "IL_09e0 - IL_0a35",
+      "statement": "Combo points calculate deltaCoins = Max(0, gift.Coins - existing.Coins) and deltaQuantity = Max(0, gift.Quantity - existing.Quantity). If deltaQuantity == 0, deltaCoins is clamped to 0. No mathematical multiplier (mul/mul.ovf) is executed in the scoring path.",
+      "validation_harness": "tests/conformance/run_tests.js (TC1), tests/verification/mutation_tests.js (MUTANT_01: KILLED), tests/verification/boundary_tests.js (B1: 3/3 PASS)",
+      "clean_room_rule": "Implement strictly additive delta math with zero-clamping for non-increasing combo quantities."
+    },
+    {
+      "claim_id": "CLM-02",
+      "title": "5-Tier Recipient Priority Resolution",
+      "subsystem": "LIVE_PK_TEAM_SCORING",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x0600049d",
+        "0x06000a46"
+      ],
+      "cil_anchors": "IL_0000 - IL_0180",
+      "statement": "Gift routing resolves strictly in order: (1) UI manual override, (2) Active combo streak lock, (3) Sender-specific target rule, (4) Round gift rule, (5) Pending unassigned queue.",
+      "validation_harness": "tests/conformance/run_tests.js (TC2), tests/verification/mutation_tests.js (MUTANT_02: KILLED), tests/verification/boundary_tests.js (B2: 3/3 PASS)",
+      "clean_room_rule": "Enforce exact 5-tier short-circuit priority hierarchy for gift attribution."
+    },
+    {
+      "claim_id": "CLM-03",
+      "title": "Dual-Table Combo Persistence & Re-anchoring",
+      "subsystem": "DATA_PERSISTENCE_LIFECYCLE",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x060004ab",
+        "0x060004ac",
+        "0x06000a46"
+      ],
+      "cil_anchors": "WriteCombo: IL_0000 - IL_0087; Gift_b0: IL_0948 - IL_0968",
+      "statement": "Active streaks reside in 'pending_combos'. Upon streak close, record is inserted into 'combos' and removed from 'pending_combos'. Encountering a closed streak with empty combo_id initiates a fresh combo state.",
+      "validation_harness": "tests/conformance/run_tests.js (TC3), tests/verification/mutation_tests.js (MUTANT_03: KILLED)",
+      "clean_room_rule": "Store active combos in pending table and finalize into combos table upon closing."
+    },
+    {
+      "claim_id": "CLM-04",
+      "title": "SQLite WAL Pre-Migration Backup & Revision Concurrency",
+      "subsystem": "DATA_PERSISTENCE_LIFECYCLE",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x060004b5",
+        "0x060004ca",
+        "0x060004ae"
+      ],
+      "cil_anchors": "Upgrade: IL_0031 - IL_01bd; CommitGiftCombo: IL_0097 - IL_00b8",
+      "statement": "Database executes automatic backup to 'backups/before-continuous-{timestamp}.db' prior to schema upgrades. Writes use revision = revision + 1 optimistic concurrency with journal_mode=WAL and busy_timeout=5000.",
+      "validation_harness": "tests/conformance/run_tests.js (TC4), tests/verification/mutation_tests.js (MUTANT_08: KILLED)",
+      "clean_room_rule": "Implement WAL mode, busy_timeout=5000, pre-migration database snapshotting, and revision-based optimistic locking."
+    },
+    {
+      "claim_id": "CLM-05",
+      "title": "Overlay WebSocket Protocol & 250ms Debounce Throttling",
+      "subsystem": "WEBSOCKET_OVERLAY_MEDIA_SERVER",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x06000311",
+        "0x060002ab"
+      ],
+      "cil_anchors": "SendTeamState: IL_0061 - IL_009a",
+      "statement": "Broadcasts JSON 'team_state' packets to WebSocket clients (default port 3784). Throttles emissions to minimum 250ms interval via teamLastStateSent timestamp and teamStatePending deferred task.",
+      "validation_harness": "tests/conformance/run_tests.js (TC5), tests/verification/mutation_tests.js (MUTANT_09: KILLED)",
+      "clean_room_rule": "Throttle overlay broadcast events to 250ms minimum intervals with trailing deferred execution."
+    },
+    {
+      "claim_id": "CLM-06",
+      "title": "Dynamic Media HTTP Port Derivation & Port Hopping",
+      "subsystem": "WEBSOCKET_OVERLAY_MEDIA_SERVER",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x060007f7",
+        "0x060007f3",
+        "0x060002aa"
+      ],
+      "cil_anchors": "SyncMedia: IL_0d72 - IL_0d7e; StartMediaCore: IL_0356 - IL_03e0",
+      "statement": "Media server base port is derived as int.Parse(websocketport) + 1 (default 3785). On HttpListenerException collision, waits 300ms and retries on port + 1 up to 3 times (3785 -> 3786 -> 3787 -> 3788). Serves 14 file extensions with application/octet-stream fallback.",
+      "validation_harness": "tests/conformance/run_tests.js (TC6), tests/verification/mutation_tests.js (MUTANT_10: KILLED)",
+      "clean_room_rule": "Derive media port dynamically from websocketport + 1 with 3 retry hops (+1, 300ms delay) and 14 MIME types dictionary."
+    },
+    {
+      "claim_id": "CLM-07",
+      "title": "Embedded Script Structural Validation & SHA-256 Fingerprinting",
+      "subsystem": "CROSS_CUTTING_SECURITY",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x06000295"
+      ],
+      "cil_anchors": "Validate: IL_0007 - IL_014a",
+      "statement": "EmbeddedScriptLoader enforces 1MB payload ceiling, trims UTF-8 BOM, validates JS MIME types, blocks null bytes, checks denial error tokens, and computes SHA-256 as internal immutable content identity without external whitelist check.",
+      "validation_harness": "tests/conformance/run_tests.js (TC7), tests/verification/mutation_tests.js (MUTANT_06: KILLED)",
+      "clean_room_rule": "Enforce 1MB limit, MIME checks, no null bytes, structural JS tokens, and content-derived SHA-256 fingerprinting."
+    },
+    {
+      "claim_id": "CLM-08",
+      "title": "Scenario Engine 256 Queue Bound & Arithmetic Clamping",
+      "subsystem": "VISUAL_EFFECTS_SCENARIO_ENGINE",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x0600042e",
+        "0x0600042f"
+      ],
+      "cil_anchors": "Tick: IL_03a9 - IL_03ba; AddState: IL_04ad - IL_04c5",
+      "statement": "Scenario tick scheduler limits pending actions to at most 256 items per cycle via Enumerable.Take(256). State variable additions are clamped to [-1,000,000, 1,000,000]. Condition tree evaluates group, time, data, and random branches.",
+      "validation_harness": "tests/conformance/run_tests.js (TC8), tests/verification/mutation_tests.js (MUTANT_04: KILLED), tests/verification/boundary_tests.js (B3: 3/3 PASS)",
+      "clean_room_rule": "Enforce 256 action queue limit per tick, [-1M, 1M] state clamping, and short-circuit condition evaluation."
+    },
+    {
+      "claim_id": "CLM-09",
+      "title": "BlazePose Sigmoid Clamping, 2254 Anchors & Squat State Machine",
+      "subsystem": "AI_POSE_TRACKING_OBS",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x0600045b",
+        "0x0600045c",
+        "0x060008e8",
+        "0x060008d4"
+      ],
+      "cil_anchors": "Sigmoid: IL_0013 - IL_0025; Squat: IL_0120 - IL_0180",
+      "statement": "Sigmoid activation clamps input to [-80, 80]. Anchor generator produces 2,254 boxes (28x28x2, 14x14x2, 7x7x6). Squat state machine cycles: STANDING (>160 deg) -> DESCENDING (<140 deg) -> SQUATTING (<=100 deg) -> rep increment. OBS v5 uses SHA256 challenge-response.",
+      "validation_harness": "tests/conformance/run_tests.js (TC9), tests/verification/mutation_tests.js (MUTANT_05: KILLED), tests/verification/boundary_tests.js (B4: 3/3 PASS)",
+      "clean_room_rule": "Implement Sigmoid clamp [-80, 80], 2254 BlazePose anchors, 160/140/100 deg squat hysteresis, and standard OBS v5 handshake."
+    },
+    {
+      "claim_id": "CLM-10",
+      "title": "Win32 Hotkey Message Decoding & Scancode Synthesis",
+      "subsystem": "GAME_HOTKEYS_AUTOMATION",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x0600020d",
+        "0x06000302"
+      ],
+      "cil_anchors": "WndProc: IL_0045 - IL_0090",
+      "statement": "Processes WM_HOTKEY (0x0312): modifiers decoded from LOWORD (LPARAM & 0xFFFF), virtual key from HIWORD ((LPARAM >> 16) & 0xFFFF). Synthesizes DirectX scancodes for target game windows.",
+      "validation_harness": "tests/conformance/run_tests.js (TC10), tests/verification/mutation_tests.js (MUTANT_07: KILLED)",
+      "clean_room_rule": "Decode WM_HOTKEY modifiers and virtual key codes accurately and emit corresponding hardware scancodes."
+    },
+    {
+      "claim_id": "CLM-11",
+      "title": "TikTok Live Event Deserialization & Deduplication",
+      "subsystem": "TIKTOK_EVENT_PIPELINE",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x060001f0",
+        "0x06000a46"
+      ],
+      "cil_anchors": "DeserializeEvent: IL_0012 - IL_0085",
+      "statement": "Ingests TikTok JSON events (gift, comment, like, member). Deduplicates gifts using message_id and combo_id sliding buffer to prevent double-scoring.",
+      "validation_harness": "tests/conformance/run_tests.js (TC11), tests/verification/mutation_tests.js (MUTANT_11: KILLED), tests/verification/boundary_tests.js (B5: 3/3 PASS)",
+      "clean_room_rule": "Implement JSON event deserialization with sliding-window deduplication on message_id and combo_id."
+    },
+    {
+      "claim_id": "CLM-12",
+      "title": "EffectProcessTrust RSA-2048 Named Pipe Peer Authentication",
+      "subsystem": "CROSS_CUTTING_SECURITY",
+      "provenance_status": "PROVEN_BY_CIL",
+      "cil_tokens": [
+        "0x06000381",
+        "0x06000382",
+        "0x06000383",
+        "0x06000384",
+        "0x06000385",
+        "0x06000386"
+      ],
+      "cil_anchors": "Verify: IL_0000 - IL_01b5 (437 instructions)",
+      "statement": "Validates OBS/Studio plugin trust using RSA-2048 public key embedded at string token 0x700061e8 to verify effects-trust.json manifest. Rejects manifests exceeding size threshold. Authenticates Named Pipe peers before allowing effects IPC.",
+      "validation_harness": "Báo cáo 27 CIL verification, Báo cáo 34 Contradiction A2/A3 reconciliation",
+      "clean_room_rule": "Design secure IPC authentication between host app and plugin processes; do not copy embedded proprietary RSA public key."
+    }
+  ],
+  "debunked_claims": [
+    {
+      "id": "DEBUNK-01",
+      "topic": "HTTP Port Range 5000-5050",
+      "origin": "Phase 9 Report 29 conflation with SQLite busy_timeout=5000 pragma (0x7000f906)",
+      "verdict": "DEBUNKED: No 5000-5050 port range exists. Media server port is websocketport + 1 (3785..3788)."
+    },
+    {
+      "id": "DEBUNK-02",
+      "topic": "Script SHA-256 Whitelist Verification in EmbeddedScriptLoader",
+      "origin": "Phase 7 CLAIM-06 conflation with EffectProcessTrust RSA signature verification",
+      "verdict": "DEBUNKED: EmbeddedScriptLoader computes SHA-256 solely as an in-memory content identity, not checked against any whitelist."
+    },
+    {
+      "id": "DEBUNK-03",
+      "topic": "Overlay Media Server on Port 6211",
+      "origin": "Phase 7 CLAIM-07 and Phase 8 misattribution of LocalAiFileServer to overlay media server",
+      "verdict": "DEBUNKED: Port 6211 belongs strictly to LocalAiFileServer serving ai_model directory."
+    }
+  ]
+}

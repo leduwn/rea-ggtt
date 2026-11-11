@@ -63,13 +63,33 @@ rea-ggtiktok/
 │   ├── 30-controlled-runtime-test-plan.md # Phase 9: Kế hoạch kiểm thử động an toàn trên máy ảo cô lập
 │   ├── 31-controlled-runtime-observations.md # Phase 9: Nhật ký quan sát động (BLOCKED_PENDING_AUTHORIZATION)
 │   ├── 32-evidence-reconciliation.md   # Phase 9: Đối soát 12 khẳng định kỹ thuật & nguyên tắc phòng sạch
-│   └── 33-phase9-handoff.md            # Phase 9: Báo cáo tổng kết & chuyển giao toàn diện giai đoạn 9
+│   ├── 33-phase9-handoff.md            # Phase 9: Báo cáo tổng kết & chuyển giao toàn diện giai đoạn 9
+│   ├── 34-cross-phase-contradiction-audit.md # Phase 10: Kiểm toán giải quyết 5 mâu thuẫn A1-A5
+│   ├── 35-canonical-symbol-and-evidence-index.md # Phase 10: Chỉ mục 2.685 phương thức & căn cước nhị phân
+│   ├── 36-high-value-method-verification.md # Phase 10: Xác minh 55 method nghiệp vụ & 136 record DTOs
+│   ├── 37-canonical-behavioral-contracts.md # Phase 10: Đóng băng khế ước hành vi chuẩn mực
+│   ├── 38-test-validity-and-coverage.md # Phase 10: Kiểm toán độc lập chất lượng bộ test tuân thủ & đột biến
+│   ├── 39-external-boundaries-and-security.md # Phase 10: Đặc tả ranh giới mạng, IPC, threat model & IP
+│   ├── 40-final-technical-research-dossier.md # Phase 10: Hồ sơ nghiên cứu kỹ thuật chung quyết toàn dự án
+│   └── 41-phase10-handoff.md           # Phase 10: Báo cáo nghiệm thu & chuyển giao hoàn tất Phase 10
+├── specifications/                     # Bộ đặc tả kỹ thuật phòng sạch bất biến (Phase 10)
+│   ├── 01-scoring-engine-contract.md   # SPEC-01: Khế ước tính điểm PK & định tuyến quà 5 tầng
+│   ├── 02-data-persistence-contract.md # SPEC-02: Khế ước SQLite WAL, backup tự động & revision lock
+│   ├── 03-network-protocol-contract.md # SPEC-03: Khế ước WebSocket 3784, Media 3785-3788 & 14 MIME
+│   ├── 04-scenario-engine-contract.md  # SPEC-04: Khế ước kịch bản, điều kiện & trần hàng đợi 256
+│   ├── 05-ai-pose-tracking-contract.md # SPEC-05: Khế ước BlazePose sigmoid, 2254 anchor & squat state
+│   └── 06-security-boundaries-contract.md # SPEC-06: Khế ước bảo mật script, Win32 hotkeys & Named Pipe
 ├── evidence/                           # Bằng chứng kỹ thuật Clean-Room (Derived Artifacts)
 │   ├── flows/                          # Đặc tả JSON cấu trúc luồng của 3 pipeline trọng điểm
 │   ├── phase7/                         # Ma trận claim-matrix, contract-provenance, unresolved-claims
 │   ├── phase8/                         # Ma trận độ bao phủ 2.685 method, luồng hiệu ứng/tracking, an toàn
-│   └── phase9/                         # Ma trận đối soát khẳng định máy đọc chuẩn hóa
-│       └── claim-verification-matrix.json # Ma trận 12 khẳng định kỹ thuật có thể xử lý tự động
+│   ├── phase9/                         # Ma trận đối soát khẳng định máy đọc chuẩn hóa
+│   │   └── claim-verification-matrix.json # Ma trận 12 khẳng định kỹ thuật có thể xử lý tự động
+│   └── phase10/                        # Cơ sở dữ liệu ký hiệu & khế ước chuẩn mực (Phase 10)
+│       ├── contradiction-register.json # Sổ đăng ký xử lý dứt điểm 5 mâu thuẫn A1-A5
+│       ├── canonical-symbol-index.json # Chỉ mục ký hiệu toàn diện 2.685 methods & 502 types
+│       ├── canonical-claims.json       # 12 khẳng định chuẩn mực CIL & 3 lý thuyết bị bác bỏ
+│       └── coverage-delta.json         # Báo cáo mở rộng độ bao phủ 55 method & 136 DTOs
 ├── tests/                              # Bộ kiểm thử tuân thủ ngoại tuyến & đột biến (Test Harness)
 │   ├── conformance/                    # Bộ test độc lập không tải nhị phân (74/74 assertions PASS)
 │   │   ├── fixtures/                   # Dữ liệu kiểm thử giả lập 11 nhóm TC1 -> TC11
@@ -91,7 +111,7 @@ rea-ggtiktok/
 1. **Bóc tách Livestream TikTok (`WebView2`)**: Sử dụng Chromium nhúng với script hook `window.__ggttEmbeddedCode` để trích xuất quà tặng, bình luận, viewer count.
 2. **Live PK & Đấu Nhóm (`TeamChannelPkService`)**: Máy trạng thái quản lý round đấu, tính điểm, ghi nhận combo streak và ghi nhật ký SQLite.
 3. **Phát Overlay qua WebSocket (`Fleck`)**: Mở socket `ws://127.0.0.1:3784` truyền dữ liệu thời gian thực cho widget OBS Browser Source.
-4. **Máy chủ Media Cục bộ (Port 6211)**: Truyền phát video hiệu ứng MP4/WebM, âm thanh, và Live2D (`.moc3`, `.atlas`).
+4. **Máy chủ Media Cục bộ (Port 3785..3788) & AI Server (Port 6211)**: Truyền phát video hiệu ứng MP4/WebM, âm thanh, và Live2D (`.moc3`, `.atlas`) qua dải cổng `websocketport + 1` (3785..3788); mô hình AI phục vụ tại `http://localhost:6211/`.
 5. **Điều khiển Game Minecraft (`CoreRCON`)**: Hỗ trợ chuyển tiếp lệnh RCON vào server game Minecraft (tham số lệnh do UI người dùng cấu hình động).
 6. **AI Pose Tracking & Hình phạt (`PunishmentTrackingService`)**: Sử dụng ONNX MediaPipe Pose để đếm số lần squat khi thua cuộc và điều khiển camera OBS bám theo người.
 7. **Kịch bản Kỹ xảo Đa lớp (`ScenarioEngine`)**: Động cơ kịch bản có điều kiện (thời gian, va chạm, xác suất) kèm tách nền xanh (Chroma Key).
@@ -142,5 +162,13 @@ rea-ggtiktok/
   - [x] Khóa thực thi kiểm soát an toàn tuyệt đối (`BLOCKED_PENDING_AUTHORIZATION`): [31-controlled-runtime-observations.md](reports/31-controlled-runtime-observations.md).
   - [x] Đối soát 12 khẳng định kỹ thuật & Ma trận bằng chứng máy đọc: [32-evidence-reconciliation.md](reports/32-evidence-reconciliation.md), [claim-verification-matrix.json](evidence/phase9/claim-verification-matrix.json).
   - [x] Báo cáo tổng kết & Chuyển giao toàn diện giai đoạn 9: [33-phase9-handoff.md](reports/33-phase9-handoff.md).
+- [x] **Phase 10: Final Reverse Engineering Audit, Evidence Closure & Canonical Specification**:
+  - [x] **Task A**: Giải quyết dứt điểm 5 mâu thuẫn lớn (A1-A5) bằng CIL nhị phân: [34-cross-phase-contradiction-audit.md](reports/34-cross-phase-contradiction-audit.md), [contradiction-register.json](evidence/phase10/contradiction-register.json).
+  - [x] **Task B**: Cơ sở dữ liệu ký hiệu & khế ước chuẩn mực (2.685 methods, 502 types, 12 claims): [35-canonical-symbol-and-evidence-index.md](reports/35-canonical-symbol-and-evidence-index.md), [canonical-symbol-index.json](evidence/phase10/canonical-symbol-index.json), [canonical-claims.json](evidence/phase10/canonical-claims.json).
+  - [x] **Task C**: Xác minh sâu 55 method nghiệp vụ và chứng minh 136 method là compiler record DTO boilerplate: [36-high-value-method-verification.md](reports/36-high-value-method-verification.md), [coverage-delta.json](evidence/phase10/coverage-delta.json).
+  - [x] **Task D**: Đóng băng 6 khế ước hành vi chuẩn mực phòng sạch bất biến: [37-canonical-behavioral-contracts.md](reports/37-canonical-behavioral-contracts.md), bộ đặc tả [specifications/](specifications/).
+  - [x] **Task E**: Kiểm toán độc lập tính hợp lệ & độ nhạy bộ kiểm thử (54 conformance PASS, 15 biên PASS, 11 mutants killed 100%): [38-test-validity-and-coverage.md](reports/38-test-validity-and-coverage.md).
+  - [x] **Task F**: Phân tích ranh giới bên ngoài (mạng, IPC, threat model) & quy tắc bản quyền phòng sạch: [39-external-boundaries-and-security.md](reports/39-external-boundaries-and-security.md).
+  - [x] **Task G**: Hồ sơ nghiên cứu kỹ thuật chung quyết & Báo cáo bàn giao Phase 10: [40-final-technical-research-dossier.md](reports/40-final-technical-research-dossier.md), [41-phase10-handoff.md](reports/41-phase10-handoff.md).
 
 Mọi kết luận kỹ thuật đều đạt trạng thái kiểm toán chuẩn hóa (CONFIRMED / INFERRED / SPECULATIVE) dựa trên dữ liệu giải mã nhị phân có thể kiểm chứng độc lập. Clean-Room Ready 100%.

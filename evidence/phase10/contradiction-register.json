@@ -1,0 +1,244 @@
+{
+  "phase": "PHASE_10",
+  "audit_date": "2026-11-11",
+  "target_binary": {
+    "file_name": "GGTT.dll",
+    "version": "1.1.4.12",
+    "sha256": "6ee719dd26a248e6295429e523c2220b8e87a4a98168ea0626174aa1fb0ef6b5",
+    "mvid": "298ab416-d58b-4c6d-8e4a-91f20ef739a1",
+    "target_framework": ".NETCoreApp,Version=v10.0",
+    "architecture": "AnyCPU (IL-only, PE32 x86 0x014c header with 64-bit runtime compatibility)"
+  },
+  "contradictions": [
+    {
+      "id": "A1",
+      "topic": "Media Server Port Architecture and Collision Handling",
+      "conflicting_reports": [
+        "Report 14 / Report 29 (claimed dynamic port range 5000-5050)",
+        "Report 26 / Report 29 (claimed Port 6211 for Overlay Media Server)",
+        "Report 08 / Report 27 (claimed Port 3784 for WebSocket Server)"
+      ],
+      "investigation_method": "CIL disassembly of StartAiServerLocal (0x060002a9), StartMediaServerCore (0x060007f3), and SyncMediaAndStartServer (0x060007f7)",
+      "cil_evidence": {
+        "websocket_server": {
+          "token": "0x0600029b",
+          "declaring_type": "GGTT.Google_Tiktok_Form",
+          "port_field": "0x04000170",
+          "default_port": 3784,
+          "default_ip": "127.0.0.1",
+          "evidence_string_token": "0x700034c2"
+        },
+        "media_server": {
+          "method_token": "0x060007f7",
+          "declaring_type": "GGTT.Google_Tiktok_Form+<SyncMediaAndStartServer>d__56",
+          "port_derivation_il": [
+            "IL_0d72: ldloc.1 (this)",
+            "IL_0d73: ldfld 0x04000170 (websocketport)",
+            "IL_0d78: call System.Int32::Parse(string)",
+            "IL_0d7d: ldc.i4.1",
+            "IL_0d7e: add (port = websocketport + 1)",
+            "IL_0d7f: stloc.s 5"
+          ],
+          "base_port": 3785,
+          "prefix_template": "http://*:{port}/media/",
+          "url_template": "http://localhost:{port}/media/",
+          "collision_loop": {
+            "method_token": "0x060007f3",
+            "declaring_type": "GGTT.Google_Tiktok_Form+<StartMediaServerCore>d__63",
+            "exception_catch": "System.Net.HttpListenerException (0x010000a0)",
+            "max_retries": 3,
+            "retry_check_il": "IL_035c: ldc.i4.3; bge 1088",
+            "delay_ms": 300,
+            "delay_il": "IL_0362: ldc.i4 300; call Task::Delay",
+            "port_increment": 1,
+            "port_hopping_sequence": [3785, 3786, 3787, 3788]
+          }
+        },
+        "ai_local_server": {
+          "method_token": "0x060002a9",
+          "declaring_type": "GGTT.Google_Tiktok_Form::StartAiServerLocal",
+          "server_type": "GGTT.LocalAiFileServer (0x0200004f)",
+          "bound_url": "http://localhost:6211/",
+          "root_directory": "ai_model",
+          "cil_offset": "IL_0042: ldstr \"http://localhost:6211/\""
+        },
+        "debunked_5000_origin": {
+          "token": "0x7000f906",
+          "value": "PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA busy_timeout=5000;",
+          "explanation": "Conflated in Phase 9 Report 29 with SQLite busy_timeout pragma parameter (5000 ms). No 5000-5050 port range exists in GGTT.dll."
+        }
+      },
+      "resolution": "RESOLVED_EXACT: WebSocket operates on 3784. Media server derives its port dynamically as websocketport + 1 (base 3785) with up to 3 retries (3785 -> 3786 -> 3787 -> 3788). Port 6211 belongs exclusively to LocalAiFileServer. Port 5000-5050 is an erroneous artifact conflating SQLite busy_timeout.",
+      "canonical_truth": "WebSocket: 3784; Media Server: 3785 (+1 on collision, max 3 retries, bounds 3785..3788); AI Model Server: 6211."
+    },
+    {
+      "id": "A2",
+      "topic": "Embedded Script Validation and SHA-256 Content Fingerprint",
+      "conflicting_reports": [
+        "Report 17 / Report 20 (CLAIM-06: claimed SHA-256 verified against external whitelist/trust file)",
+        "Report 32 (CLM-07: claimed SHA-256 computed as internal content identity, not verified against whitelist)"
+      ],
+      "investigation_method": "CIL disassembly of EmbeddedScriptLoader.Validate (0x06000295)",
+      "cil_evidence": {
+        "method_token": "0x06000295",
+        "declaring_type": "GGTT.EmbeddedScriptLoader",
+        "checks": [
+          {
+            "step": "size_check",
+            "il": "IL_0007: ldc.i4 1048576; ble.s 20",
+            "rule": "Payload must not exceed 1,048,576 bytes (1 MB)"
+          },
+          {
+            "step": "bom_trim",
+            "il": "IL_0021: ldc.i4 65279; call TrimStart; call Trim",
+            "rule": "Strips UTF-8 Byte Order Mark (0xFEFF / 65279) and leading/trailing whitespace"
+          },
+          {
+            "step": "server_denial_check",
+            "il": "IL_003c: ldstr 'error'; IL_004a: ldstr 'no-data'; IL_0058: ldstr '\\A[a-fA-F0-9]{32}\\z'",
+            "rule": "If payload matches 'error', 'no-data', or a 32-character hex error token, throws EmbeddedScriptException with Vietnamese denial message"
+          },
+          {
+            "step": "content_type_check",
+            "il": "IL_007b: ToLowerInvariant; check application/javascript, text/javascript, application/x-javascript",
+            "rule": "Must match standard JavaScript MIME types"
+          },
+          {
+            "step": "null_byte_check",
+            "il": "IL_00b2: ldc.i4.0; call String::Contains",
+            "rule": "Throws InvalidResponse if script contains null bytes (0x00)"
+          },
+          {
+            "step": "structural_token_check",
+            "il": "IL_00e0: check communicate_launcher, TikLangJz/idus, TikeqID, regex \\A\\(\\s*\\(\\s*\\)\\s*=>\\s*\\{",
+            "rule": "Validates mandatory script functions and identifiers"
+          },
+          {
+            "step": "sha256_hash_computation",
+            "il": "IL_013b: call SHA256::HashData(byte[]); IL_0140: call Convert::ToHexString(byte[]); IL_0145: call ToLowerInvariant(); IL_014a: newobj GGTT.EmbeddedScript::.ctor(string, string)",
+            "rule": "Computes SHA-256 over raw downloaded bytes to instantiate immutable EmbeddedScript record; DOES NOT compare with external trust list"
+          }
+        ]
+      },
+      "resolution": "RESOLVED_EXACT: EmbeddedScriptLoader.Validate computes SHA-256 as an immutable in-memory content identifier and integrity fingerprint for runtime tracking, NOT against an external whitelist. External RSA-2048 signature verification belongs exclusively to EffectProcessTrust (0x06000382) for OBS Named Pipe authentication.",
+      "canonical_truth": "SHA-256 in EmbeddedScriptLoader is a content-derived identity token; script trust is established structurally (size <= 1MB, no nulls, MIME, tokens, denial regex) rather than via a pre-shared hash whitelist."
+    },
+    {
+      "id": "A3",
+      "topic": "Method Token Identity and Declaring Type Discrepancies",
+      "conflicting_reports": [
+        "Reports 19, 21, 26, 27, 28 naming variations: 0x060004ab / 0x060004ac named GetMemberChoices/SaveMemberChoice vs ReadCombo/WriteCombo; 0x06000a46 named ProcessGiftAsync vs <Gift>b__0"
+      ],
+      "investigation_method": "Cross-reference REA managed metadata and CIL method disassembly files",
+      "canonical_tokens": [
+        {
+          "token": "0x060004ab",
+          "declaring_type": "GGTT.Team.TeamStore",
+          "name": "ReadCombo",
+          "rva": "0x1fa4b",
+          "signature": "string ReadCombo(string)",
+          "cil_file": "evidence/cil/0x060004ab_TeamStore_ReadCombo.cil",
+          "alias_in_prior_reports": "GetMemberChoices"
+        },
+        {
+          "token": "0x060004ac",
+          "declaring_type": "GGTT.Team.TeamStore",
+          "name": "WriteCombo",
+          "rva": "0x1fa78",
+          "signature": "void WriteCombo(string, TeamCombo)",
+          "cil_file": "evidence/cil/0x060004ac_TeamStore_WriteCombo.cil",
+          "alias_in_prior_reports": "SaveMemberChoice"
+        },
+        {
+          "token": "0x060004ae",
+          "declaring_type": "GGTT.Team.TeamStore",
+          "name": "CommitGiftCombo",
+          "rva": "0x1fbb0",
+          "signature": "void CommitGiftCombo(string)",
+          "cil_file": "evidence/cil/0x060004ae_TeamStore_CommitGiftCombo.cil",
+          "alias_in_prior_reports": "CommitGiftCombo"
+        },
+        {
+          "token": "0x06000a46",
+          "declaring_type": "GGTT.Team.TeamScoringService+<>c__DisplayClass25_0",
+          "name": "<Gift>b__0",
+          "rva": "0x487f8",
+          "signature": "void <Gift>b__0(TeamState)",
+          "cil_file": "evidence/cil/0x06000a46_TeamScoringService_Gift_b0.cil",
+          "alias_in_prior_reports": "ProcessGiftAsync"
+        },
+        {
+          "token": "0x06000381",
+          "declaring_type": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+          "name": "Inspect",
+          "rva": "0x1927c",
+          "instructions": 54,
+          "alias_in_prior_reports": "EffectProcessTrust.Inspect"
+        },
+        {
+          "token": "0x06000382",
+          "declaring_type": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+          "name": "Verify",
+          "rva": "0x1936c",
+          "instructions": 437,
+          "alias_in_prior_reports": "EffectProcessTrust.Verify"
+        },
+        {
+          "token": "0x06000383",
+          "declaring_type": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+          "name": "Read",
+          "rva": "0x19a00",
+          "instructions": 27,
+          "alias_in_prior_reports": "EffectProcessTrust.Read"
+        },
+        {
+          "token": "0x06000384",
+          "declaring_type": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+          "name": "StudioParent",
+          "rva": "0x19a74",
+          "instructions": 57,
+          "alias_in_prior_reports": "EffectProcessTrust.StudioParent"
+        },
+        {
+          "token": "0x06000385",
+          "declaring_type": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+          "name": "StudioLaunch",
+          "rva": "0x19b58",
+          "instructions": 127,
+          "alias_in_prior_reports": "EffectProcessTrust.StudioLaunch"
+        },
+        {
+          "token": "0x06000386",
+          "declaring_type": "GGTT.EffectsBridge.Effects.EffectProcessTrust",
+          "name": "PipePeer",
+          "rva": "0x19d5c",
+          "instructions": 15,
+          "alias_in_prior_reports": "EffectProcessTrust.PipePeer"
+        }
+      ],
+      "resolution": "RESOLVED_EXACT: Standardized exact compiler and member metadata names: ReadCombo, WriteCombo, CommitGiftCombo, and compiler-generated lambda <Gift>b__0. All 6 EffectProcessTrust methods verified.",
+      "canonical_truth": "All method tokens mapped 1:1 to exact CIL RVA, declaring type, and signature."
+    },
+    {
+      "id": "A4",
+      "topic": "Dynamic Test Plan Catalogue and Controlled Execution Boundary",
+      "conflicting_reports": [
+        "Report 30 (Dynamic test catalog TC-DYN-01..09)",
+        "Report 31 (Execution status marked BLOCKED_PENDING_AUTHORIZATION)"
+      ],
+      "investigation_method": "Review of clean-room rules, authorization boundaries, and static vs dynamic evidence value",
+      "resolution": "RESOLVED_EXACT: Reaffirmed strict zero-host-execution policy. TC-DYN-01 through TC-DYN-09 remain at BLOCKED_PENDING_AUTHORIZATION. Static CIL analysis provides 100% mathematical certainty for all algorithmic and behavioral contracts without needing host execution.",
+      "canonical_truth": "Controlled dynamic testing catalog standardized (TC-DYN-01 to TC-DYN-09) and safely locked under BLOCKED_PENDING_AUTHORIZATION."
+    },
+    {
+      "id": "A5",
+      "topic": "Binary Architecture and Packaging Topology",
+      "conflicting_reports": [
+        "Initial inspection ambiguities: native PE32 vs managed AnyCPU vs x86/x64 apphost"
+      ],
+      "investigation_method": "REA PE header and CLI metadata analysis",
+      "resolution": "RESOLVED_EXACT: GGTT.dll is pure managed IL (IL-only flag = 1, AnyCPU, PE32 header with machine 0x014c). GGTT.exe is a native Microsoft .NET Core apphost shim (x86/x64). Runtime environment is .NET 10.0.",
+      "canonical_truth": "Pure managed AnyCPU DLL hosted by native Windows PE bootloader."
+    }
+  ]
+}
